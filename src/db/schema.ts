@@ -10,7 +10,7 @@ import {
   uniqueIndex,
   index,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 export const memberRole = pgEnum("member_role", ["owner", "admin", "member"]);
 export const riskLevel = pgEnum("risk_level", [
@@ -187,11 +187,44 @@ export const approvals = pgTable(
   ],
 );
 
+export const invites = pgTable(
+  "invites",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    orgId: uuid("org_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    role: memberRole("role").notNull().default("member"),
+    token: text("token").notNull().unique(),
+    invitedBy: text("invited_by").notNull(),
+    status: inviteStatus("status").notNull().default("pending"),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("invites_org_status_idx").on(table.orgId, table.status),
+    uniqueIndex("invites_org_email_pending_idx")
+      .on(table.orgId, table.email)
+      .where(sql`${table.status} = 'pending'`),
+  ],
+);
+
 export const organizationsRelations = relations(organizations, ({ many }) => ({
   members: many(orgMembers),
   agents: many(agents),
   policies: many(policies),
   actions: many(actions),
+  invites: many(invites),
+}));
+
+export const invitesRelations = relations(invites, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [invites.orgId],
+    references: [organizations.id],
+  }),
 }));
 
 export const agentsRelations = relations(agents, ({ one, many }) => ({
@@ -248,3 +281,5 @@ export type NewPolicy = typeof policies.$inferInsert;
 export type Action = typeof actions.$inferSelect;
 export type NewAction = typeof actions.$inferInsert;
 export type Approval = typeof approvals.$inferSelect;
+export type Invite = typeof invites.$inferSelect;
+export type NewInvite = typeof invites.$inferInsert;
