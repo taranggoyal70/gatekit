@@ -104,7 +104,7 @@ export function PoliciesEditor() {
               value={draft.name}
               onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
               placeholder="Block competitor emails"
-              className="input"
+              className="input w-full"
             />
           </Field>
           <Field label="Priority (lower = evaluated first)">
@@ -112,7 +112,7 @@ export function PoliciesEditor() {
               type="number"
               value={draft.priority}
               onChange={(e) => setDraft((d) => ({ ...d, priority: Number(e.target.value) }))}
-              className="input"
+              className="input w-full"
             />
           </Field>
           <Field label="Action type pattern">
@@ -120,7 +120,7 @@ export function PoliciesEditor() {
               value={draft.actionTypePattern}
               onChange={(e) => setDraft((d) => ({ ...d, actionTypePattern: e.target.value }))}
               placeholder="email.* or payment.refund"
-              className="input"
+              className="input w-full"
             />
           </Field>
           <Field label="Target pattern">
@@ -128,14 +128,14 @@ export function PoliciesEditor() {
               value={draft.targetPattern}
               onChange={(e) => setDraft((d) => ({ ...d, targetPattern: e.target.value }))}
               placeholder="*@competitor.com"
-              className="input"
+              className="input w-full"
             />
           </Field>
           <Field label="Minimum risk level">
             <select
               value={draft.minRiskLevel}
               onChange={(e) => setDraft((d) => ({ ...d, minRiskLevel: e.target.value }))}
-              className="input"
+              className="input w-full"
             >
               {RISK_LEVELS.map((level) => (
                 <option key={level} value={level}>
@@ -148,7 +148,7 @@ export function PoliciesEditor() {
             <select
               value={draft.decision}
               onChange={(e) => setDraft((d) => ({ ...d, decision: e.target.value }))}
-              className="input"
+              className="input w-full"
             >
               {DECISIONS.map((decision) => (
                 <option key={decision} value={decision}>

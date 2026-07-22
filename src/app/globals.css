@@ -27,8 +27,16 @@ body {
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
+/*
+ * Deliberately no width here. This class is combined with Tailwind sizing
+ * utilities (flex-1, w-32, w-full) at every call site — an earlier version
+ * hard-coded width: 100%, which silently won the cascade over w-32/flex-1
+ * (same specificity, declared later), collapsing flexbox rows down to a
+ * ~26px sliver next to whichever sibling had the width. Every usage now
+ * supplies its own width utility explicitly instead of relying on an
+ * implicit default here.
+ */
 .input {
-  width: 100%;
   border-radius: 0.5rem;
   border: 1px solid var(--line);
   background: transparent;
