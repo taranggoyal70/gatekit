@@ -1,0 +1,35 @@
+import { clerkMiddleware } from "@clerk/nextjs/server";
+
+const PROTECTED_PAGE_PREFIXES = ["/dashboard", "/agents", "/policies", "/approvals", "/logs", "/settings"];
+const PROTECTED_API_PREFIXES = ["/api/agents", "/api/policies", "/api/actions", "/api/approvals"];
+
+export function isProtectedPagePathname(pathname: string): boolean {
+  return PROTECTED_PAGE_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
+
+export function isProtectedApiPathname(pathname: string): boolean {
+  return PROTECTED_API_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
+
+export default clerkMiddleware(async (auth, request) => {
+  const pathname = request.nextUrl.pathname;
+  if (isProtectedPagePathname(pathname)) {
+    const signInUrl = new URL("/sign-in", request.url);
+    signInUrl.searchParams.set("redirect_url", request.url);
+    await auth.protect({ unauthenticatedUrl: signInUrl.toString() });
+  } else if (isProtectedApiPathname(pathname)) {
+    await auth.protect();
+  }
+});
+
+export const config = {
+  matcher: [
+    "/__clerk(.*)",
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico)).*)",
+    "/(api|trpc)(.*)",
+  ],
+};
