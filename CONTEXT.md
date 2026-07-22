@@ -6,8 +6,37 @@ implementation details live in the code and README.
 ## Organization
 
 A tenant. Every Agent, Policy, and Action belongs to exactly one
-Organization. A user is lazily given a default Organization on first sign-in
-(see `getOrCreateDefaultOrg`); there is no multi-member team model yet.
+Organization. A user is lazily given a default Organization on first
+sign-in (see `getOrCreateDefaultOrg`) and can belong to more than one —
+"default" means the earliest membership by join time, picked
+deterministically, not the org list's incidental database order. An
+Organization has one **Plan** (`free`, `pro`, or `enterprise`) that governs
+its Agent and Member limits (see `getPlanLimits`).
+
+## Member and Role
+
+A user's association with an Organization, with a Role of `owner`,
+`admin`, or `member`. `owner`/`admin` may invite, remove, and re-role other
+Members; `member` cannot. Every Organization must always have at least one
+`owner` — the last owner can neither be demoted nor removed (see
+`removeMember`, `updateMemberRole`).
+
+## Invite
+
+A pending offer for someone to join an Organization as a Member, sent to
+an email address with a proposed Role (`admin` or `member` — an Invite
+cannot grant `owner`). Has its own lifecycle
+(`pending`/`accepted`/`revoked`/`expired`) independent of Approval's, even
+though both use the same lazy-expiry pattern. Accepting an Invite requires
+signing in with the exact email address it was sent to.
+
+## Subscription
+
+The Stripe-backed record of an Organization's paid plan: a `stripeCustomerId`,
+a `stripeSubscriptionId`, and a `status` mirrored from Stripe's webhook
+events. An Organization's `planTier` column is a denormalized cache of
+this — updated whenever the Subscription changes — so plan-limit checks
+never need to join out to Stripe or this table on every request.
 
 ## Agent
 
@@ -63,6 +92,17 @@ separate from — but always mirrored onto — the parent Action's status. An
 Approval that isn't decided before `expiresAt` is lazily marked `expired`
 the next time it's read (see `expirePastDueApprovals`), not by a background
 job.
+
+## Notification settings
+
+An Organization's configuration for out-of-band alerts — currently just an
+optional Slack incoming-webhook URL. When set, every Action that becomes
+`require_approval` also posts a Slack message alongside the existing email
+fan-out; a missing or failing webhook never blocks `evaluate()` (same
+failure policy as email). The webhook URL is restricted to
+`https://hooks.slack.com/services/...` — Gatekit's server POSTs to it
+blindly, so accepting an arbitrary URL here would make the field an SSRF
+relay.
 
 ## Guard
 
