@@ -212,12 +212,42 @@ export const invites = pgTable(
   ],
 );
 
+export const subscriptions = pgTable(
+  "subscriptions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    orgId: uuid("org_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" })
+      .unique(),
+    stripeCustomerId: text("stripe_customer_id").notNull(),
+    stripeSubscriptionId: text("stripe_subscription_id").notNull().unique(),
+    plan: text("plan").notNull().default("free"),
+    status: subscriptionStatus("status").notNull().default("active"),
+    currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("subscriptions_stripe_sub_idx").on(table.stripeSubscriptionId)],
+);
+
 export const organizationsRelations = relations(organizations, ({ many }) => ({
   members: many(orgMembers),
   agents: many(agents),
   policies: many(policies),
   actions: many(actions),
   invites: many(invites),
+}));
+
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [subscriptions.orgId],
+    references: [organizations.id],
+  }),
 }));
 
 export const invitesRelations = relations(invites, ({ one }) => ({
@@ -283,3 +313,5 @@ export type NewAction = typeof actions.$inferInsert;
 export type Approval = typeof approvals.$inferSelect;
 export type Invite = typeof invites.$inferSelect;
 export type NewInvite = typeof invites.$inferInsert;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type NewSubscription = typeof subscriptions.$inferInsert;
