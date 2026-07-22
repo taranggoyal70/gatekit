@@ -81,6 +81,17 @@ export async function getOrCreateDefaultOrg(user: AuthedUser) {
   });
 }
 
+/**
+ * Resolves (and lazily creates) the current request's org context in one
+ * call — every dashboard-facing API route needs exactly this before it can
+ * touch org-scoped data.
+ */
+export async function requireOrgContext() {
+  const user = await requireUser();
+  const { org, role } = await getOrCreateDefaultOrg(user);
+  return { user, org, role };
+}
+
 export async function requireOrgMembership(userId: string, orgId: string) {
   const database = db();
   const [membership] = await database
