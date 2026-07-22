@@ -54,6 +54,36 @@ export async function sendApprovalRequestEmail(orgId: string, action: Action) {
   });
 }
 
+/**
+ * Unlike the approval notification, an invite email failing to send is a
+ * real problem the caller should know about — the invite row exists but the
+ * invitee has no way to discover it otherwise, so this throws instead of
+ * swallowing the error.
+ */
+export async function sendInviteEmail(
+  orgName: string,
+  invite: { email: string; token: string; invitedByEmail: string },
+) {
+  const client = resend();
+  if (!client) return;
+
+  const from = process.env.GATEKIT_NOTIFICATION_FROM ?? "Gatekit <notifications@gatekit.dev>";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+  await client.emails.send({
+    from,
+    to: [invite.email],
+    subject: `${invite.invitedByEmail} invited you to ${orgName} on Gatekit`,
+    text: [
+      `${invite.invitedByEmail} invited you to join "${orgName}" on Gatekit.`,
+      ``,
+      `Accept the invite: ${siteUrl}/invite/${invite.token}`,
+      ``,
+      `This invite expires in 7 days.`,
+    ].join("\n"),
+  });
+}
+
 async function resolveEmails(userIds: string[]): Promise<string[]> {
   if (userIds.length === 0) return [];
   try {
