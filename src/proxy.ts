@@ -16,7 +16,13 @@ const PROTECTED_API_PREFIXES = [
   "/api/approvals",
   "/api/team",
   "/api/invites",
+  "/api/billing",
 ];
+
+// Stripe calls this directly with its own signature, not a Clerk session —
+// it must stay reachable while every other /api/billing/* route requires
+// sign-in.
+const UNPROTECTED_EXACT_PATHS = new Set(["/api/billing/webhook"]);
 
 export function isProtectedPagePathname(pathname: string): boolean {
   return PROTECTED_PAGE_PREFIXES.some(
@@ -25,6 +31,7 @@ export function isProtectedPagePathname(pathname: string): boolean {
 }
 
 export function isProtectedApiPathname(pathname: string): boolean {
+  if (UNPROTECTED_EXACT_PATHS.has(pathname)) return false;
   return PROTECTED_API_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
