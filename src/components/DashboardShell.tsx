@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/policies", label: "Policies" },
   { href: "/agents", label: "Agents" },
   { href: "/logs", label: "Audit log" },
+  { href: "/settings", label: "Settings" },
 ];
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
