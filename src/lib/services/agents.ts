@@ -2,12 +2,11 @@ import "server-only";
 
 import { and, desc, eq, isNull } from "drizzle-orm";
 
-import { agents } from "@/db/schema";
+import { agents, organizations } from "@/db/schema";
 import { generateAgentKey, hashAgentKey, keyDisplayPrefix } from "@/lib/agent-keys";
 import { AppError } from "@/lib/errors";
+import { getPlanLimits } from "@/lib/plan-limits";
 import type { Database } from "@/lib/services/types";
-
-const FREE_TIER_AGENT_LIMIT = 20;
 
 export async function listAgents(database: Database, orgId: string) {
   return database
@@ -22,10 +21,18 @@ export async function createAgent(
   orgId: string,
   input: { name: string; description?: string },
 ) {
+  const [org] = await database
+    .select({ planTier: organizations.planTier })
+    .from(organizations)
+    .where(eq(organizations.id, orgId))
+    .limit(1);
+  if (!org) throw new AppError("Organization not found.", 404, "not_found");
+
+  const { maxAgents } = getPlanLimits(org.planTier);
   const existing = await listAgents(database, orgId);
-  if (existing.length >= FREE_TIER_AGENT_LIMIT) {
+  if (existing.length >= maxAgents) {
     throw new AppError(
-      `You've reached the limit of ${FREE_TIER_AGENT_LIMIT} agents on this plan.`,
+      `You've reached the limit of ${maxAgents} agents on this plan. Upgrade to add more.`,
       403,
       "limit_reached",
     );
