@@ -30,4 +30,11 @@ describe("getPlanLimits", () => {
   it("falls back to free-tier limits for an empty string", () => {
     expect(getPlanLimits("")).toEqual(getPlanLimits("free"));
   });
+
+  it("documents that Infinity serializes to null over JSON — API responses must treat null, not Infinity, as 'unlimited' on the client", () => {
+    const limits = getPlanLimits("enterprise");
+    const roundTripped = JSON.parse(JSON.stringify(limits));
+    expect(roundTripped.maxAgents).toBeNull();
+    expect(roundTripped.maxMembers).toBeNull();
+  });
 });
