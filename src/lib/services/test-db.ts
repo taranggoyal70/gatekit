@@ -21,6 +21,6 @@ export function testDb() {
 
 export async function truncateAll(database: NonNullable<ReturnType<typeof testDb>>) {
   await database.execute(
-    sql`TRUNCATE TABLE approvals, actions, policies, agents, org_members, organizations RESTART IDENTITY CASCADE`,
+    sql`TRUNCATE TABLE approvals, actions, policies, agents, invites, org_members, organizations RESTART IDENTITY CASCADE`,
   );
 }
