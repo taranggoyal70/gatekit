@@ -1,7 +1,7 @@
 import "server-only";
 
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import { orgMembers, organizations } from "@/db/schema";
@@ -29,10 +29,12 @@ function slugify(input: string): string {
 }
 
 /**
- * MVP org model: one default organization per user, created lazily on first
- * authenticated request rather than via a signup webhook. This keeps
- * onboarding to zero extra steps — teams/invites are a v2 concern once
- * there's a real multi-seat customer asking for them.
+ * Every user gets an owned organization lazily created on first
+ * authenticated request. Once teams/invites exist, a user can belong to
+ * more than one org — "default" means the earliest membership by
+ * creation time (their own org, in the common case), picked
+ * deterministically rather than by whatever order Postgres happens to
+ * return rows in.
  */
 export async function getOrCreateDefaultOrg(user: AuthedUser) {
   const database = db();
@@ -42,6 +44,7 @@ export async function getOrCreateDefaultOrg(user: AuthedUser) {
     .from(orgMembers)
     .innerJoin(organizations, eq(orgMembers.orgId, organizations.id))
     .where(eq(orgMembers.userId, user.userId))
+    .orderBy(asc(orgMembers.createdAt))
     .limit(1);
   if (existing) return existing;
 
@@ -101,6 +104,33 @@ export async function requireOrgMembership(userId: string, orgId: string) {
     .limit(1);
   if (!membership) {
     throw new AppError("You do not have access to this organization.", 403, "forbidden");
+  }
+  return membership;
+}
+
+const ROLE_RANK: Record<"owner" | "admin" | "member", number> = {
+  member: 0,
+  admin: 1,
+  owner: 2,
+};
+
+/**
+ * Membership management (invite, remove, change role) is restricted to
+ * admins and owners — a plain member can use the product but shouldn't be
+ * able to add or remove other seats.
+ */
+export async function requireOrgRole(
+  userId: string,
+  orgId: string,
+  minRole: "owner" | "admin" | "member",
+) {
+  const membership = await requireOrgMembership(userId, orgId);
+  if (ROLE_RANK[membership.role] < ROLE_RANK[minRole]) {
+    throw new AppError(
+      `This action requires the "${minRole}" role or higher.`,
+      403,
+      "insufficient_role",
+    );
   }
   return membership;
 }
