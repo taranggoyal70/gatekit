@@ -1,5 +1,6 @@
 import { BillingPanel } from "@/components/BillingPanel";
 import { DashboardShell } from "@/components/DashboardShell";
+import { NotificationsPanel } from "@/components/NotificationsPanel";
 import { TeamPanel } from "@/components/TeamPanel";
 
 export default function SettingsPage() {
@@ -13,6 +14,13 @@ export default function SettingsPage() {
             Manage your plan and subscription.
           </p>
           <BillingPanel />
+        </section>
+        <section>
+          <h2 className="mb-1 text-lg font-semibold tracking-tight">Notifications</h2>
+          <p className="mb-4 text-sm text-[var(--foreground)]/60">
+            Get pinged in Slack the moment an action needs approval.
+          </p>
+          <NotificationsPanel />
         </section>
         <section>
           <h2 className="mb-1 text-lg font-semibold tracking-tight">Team</h2>
