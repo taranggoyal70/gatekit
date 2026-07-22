@@ -8,6 +8,7 @@ type BillingStatus = {
   // JSON, not the number Infinity — the client must check for null, not
   // compare against Infinity, or "unlimited" would render as blank/NaN.
   limits: { maxAgents: number | null; maxMembers: number | null; monthlyActionLimit: number | null };
+  upgradeAvailable: boolean;
   subscription: { status: string; currentPeriodEnd: string | null } | null;
 };
 
@@ -110,7 +111,7 @@ export function BillingPanel() {
           >
             {redirecting ? "Opening…" : "Manage subscription"}
           </button>
-        ) : (
+        ) : status.upgradeAvailable ? (
           <button
             onClick={upgrade}
             disabled={redirecting}
@@ -118,6 +119,13 @@ export function BillingPanel() {
           >
             {redirecting ? "Redirecting…" : "Upgrade to Pro"}
           </button>
+        ) : (
+          <a
+            href="mailto:hello@gatekit.dev?subject=Gatekit%20Pro"
+            className="rounded-lg border border-[var(--line)] px-4 py-2 text-sm font-medium"
+          >
+            Contact us to upgrade
+          </a>
         )}
       </div>
     </div>
