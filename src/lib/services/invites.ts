@@ -7,6 +7,7 @@ import { organizations, orgMembers, invites } from "@/db/schema";
 import { AppError } from "@/lib/errors";
 import { generateInviteToken } from "@/lib/invite-tokens";
 import { sendInviteEmail } from "@/lib/notifications";
+import { PG_UNIQUE_VIOLATION, pgErrorCode } from "@/lib/pg-error";
 import { assertMemberCapacity, countMembers } from "@/lib/services/team";
 import type { Database } from "@/lib/services/types";
 
@@ -60,11 +61,7 @@ export async function createInvite(
     })
     .returning()
     .catch((error) => {
-      if (
-        error instanceof Error &&
-        "code" in error &&
-        (error as { code?: string }).code === "23505"
-      ) {
+      if (pgErrorCode(error) === PG_UNIQUE_VIOLATION) {
         throw new AppError(
           "There is already a pending invite for this email.",
           409,
