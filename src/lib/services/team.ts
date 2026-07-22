@@ -4,9 +4,8 @@ import { and, asc, eq } from "drizzle-orm";
 
 import { orgMembers } from "@/db/schema";
 import { AppError } from "@/lib/errors";
+import { getPlanLimits } from "@/lib/plan-limits";
 import type { Database } from "@/lib/services/types";
-
-const FREE_TIER_MEMBER_LIMIT = 10;
 
 export async function listMembers(database: Database, orgId: string) {
   return database
@@ -21,10 +20,11 @@ export async function countMembers(database: Database, orgId: string): Promise<n
   return members.length;
 }
 
-export function assertMemberCapacity(currentCount: number) {
-  if (currentCount >= FREE_TIER_MEMBER_LIMIT) {
+export function assertMemberCapacity(currentCount: number, planTier: string) {
+  const { maxMembers } = getPlanLimits(planTier);
+  if (currentCount >= maxMembers) {
     throw new AppError(
-      `This organization has reached the limit of ${FREE_TIER_MEMBER_LIMIT} members on the free plan.`,
+      `This organization has reached the limit of ${maxMembers} members on its current plan. Upgrade to add more.`,
       403,
       "limit_reached",
     );

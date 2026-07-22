@@ -36,15 +36,15 @@ export async function createInvite(
   invitedByEmail: string,
   input: InviteInput,
 ) {
-  const memberCount = await countMembers(database, orgId);
-  assertMemberCapacity(memberCount);
-
   const [org] = await database
-    .select({ name: organizations.name })
+    .select({ name: organizations.name, planTier: organizations.planTier })
     .from(organizations)
     .where(eq(organizations.id, orgId))
     .limit(1);
   if (!org) throw new AppError("Organization not found.", 404, "not_found");
+
+  const memberCount = await countMembers(database, orgId);
+  assertMemberCapacity(memberCount, org.planTier);
 
   const email = input.email.toLowerCase().trim();
   const token = generateInviteToken();
@@ -126,8 +126,15 @@ export async function acceptInvite(
     );
   }
 
+  const [org] = await database
+    .select()
+    .from(organizations)
+    .where(eq(organizations.id, invite.orgId))
+    .limit(1);
+  if (!org) throw new AppError("Organization not found.", 404, "not_found");
+
   const memberCount = await countMembers(database, invite.orgId);
-  assertMemberCapacity(memberCount);
+  assertMemberCapacity(memberCount, org.planTier);
 
   await database
     .insert(orgMembers)
@@ -139,12 +146,6 @@ export async function acceptInvite(
     .set({ status: "accepted" })
     .where(eq(invites.id, invite.id))
     .returning();
-
-  const [org] = await database
-    .select()
-    .from(organizations)
-    .where(eq(organizations.id, invite.orgId))
-    .limit(1);
 
   return { invite: updatedInvite, org };
 }
