@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 type Member = {
   id: string;
   userId: string;
+  email: string | null;
   role: "owner" | "admin" | "member";
   createdAt: string;
 };
@@ -175,7 +176,11 @@ export function TeamPanel() {
                 key={member.id}
                 className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3 last:border-0"
               >
-                <p className="text-sm font-mono">{member.userId}</p>
+                <p className="text-sm">
+                  {member.email ?? (
+                    <span className="font-mono text-[var(--foreground)]/50">{member.userId}</span>
+                  )}
+                </p>
                 <div className="flex items-center gap-3">
                   <select
                     value={member.role}

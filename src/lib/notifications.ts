@@ -6,6 +6,7 @@ import { Resend } from "resend";
 import { db } from "@/db/client";
 import { orgMembers } from "@/db/schema";
 import type { Action } from "@/db/schema";
+import { resolveUserEmails } from "@/lib/user-directory";
 
 let _resend: Resend | null = null;
 
@@ -35,7 +36,8 @@ export async function sendApprovalRequestEmail(orgId: string, action: Action) {
     .from(orgMembers)
     .where(eq(orgMembers.orgId, orgId));
 
-  const recipients = await resolveEmails(members.map((m) => m.userId));
+  const emailsByUserId = await resolveUserEmails(members.map((m) => m.userId));
+  const recipients = Object.values(emailsByUserId);
   if (recipients.length === 0) return;
 
   await client.emails.send({
@@ -82,26 +84,4 @@ export async function sendInviteEmail(
       `This invite expires in 7 days.`,
     ].join("\n"),
   });
-}
-
-async function resolveEmails(userIds: string[]): Promise<string[]> {
-  if (userIds.length === 0) return [];
-  try {
-    const { clerkClient } = await import("@clerk/nextjs/server");
-    const client = await clerkClient();
-    const emails: string[] = [];
-    for (const userId of userIds) {
-      try {
-        const user = await client.users.getUser(userId);
-        const email = user.primaryEmailAddress?.emailAddress;
-        if (email) emails.push(email);
-      } catch (error) {
-        console.error("Failed to resolve email for user", userId, error);
-      }
-    }
-    return emails;
-  } catch (error) {
-    console.error("Failed to resolve org member emails", error);
-    return [];
-  }
 }
