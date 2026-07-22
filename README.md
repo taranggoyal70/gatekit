@@ -19,11 +19,22 @@ systems.
 ## Architecture
 
 - **Next.js 16 (App Router) + TypeScript** — dashboard and API
-- **Postgres + Drizzle ORM** — organizations, agents, policies, actions, approvals
+- **Postgres + Drizzle ORM** — organizations, members, invites, agents, policies, actions, approvals, subscriptions
 - **Clerk** — dashboard authentication (human users)
 - **Agent API keys** — SHA-256-hashed, separate auth path for SDK/agent traffic
 - **`@gatekit/sdk`** (`packages/sdk`) — the TypeScript client agents import
-- **Resend** — approval-request email notifications (optional)
+- **Resend** — approval-request and invite email notifications (optional)
+- **Slack** — approval notifications via a per-org incoming webhook (optional)
+- **Stripe** — Pro-tier billing: checkout, customer portal, and webhook-driven plan sync (optional)
+
+### Teams and plans
+
+An organization can have multiple members with a role (`owner`/`admin`/`member`);
+owners and admins can invite by email, change roles, and remove members —
+every organization must always keep at least one owner. Plan limits (agent
+count, member count) are read from `organizations.planTier`, which Stripe's
+webhook keeps in sync with the actual subscription (see
+`src/lib/services/billing.ts` and `src/lib/plan-limits.ts`).
 
 ### Policy engine
 
@@ -103,8 +114,12 @@ src/
   db/                    Drizzle schema + migrations
   lib/
     policy-engine.ts     Core rule-evaluation logic (pure, heavily tested)
-    services/            Business logic used by API routes (agents, policies, actions, approvals)
-    auth.ts               Clerk user + org-context helpers
+    plan-limits.ts        Free/Pro/Enterprise agent + member limits
+    stripe.ts             Stripe client
+    slack.ts              Slack webhook senders (approval notification + test message)
+    services/            Business logic used by API routes (agents, policies, actions,
+                          approvals, team, invites, billing, notification-settings)
+    auth.ts               Clerk user + org-context + role-gated guard helpers
     agent-auth.ts          Agent API-key authentication
 packages/sdk/            @gatekit/sdk — published TypeScript client
 ```
@@ -112,6 +127,8 @@ packages/sdk/            @gatekit/sdk — published TypeScript client
 ## Environment variables
 
 See `.env.example`. Only `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`,
-`CLERK_SECRET_KEY`, and `DATABASE_URL` are required to run the app;
-`RESEND_API_KEY` is optional (approval notifications degrade to
-dashboard-only without it).
+`CLERK_SECRET_KEY`, and `DATABASE_URL` are required to run the app.
+`RESEND_API_KEY` and the `STRIPE_*` variables are optional — approval/invite
+emails and the Pro upgrade flow degrade gracefully without them. Slack
+notifications need no environment variable at all: each organization
+configures its own webhook URL from **Settings → Notifications**.
