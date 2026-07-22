@@ -1,7 +1,22 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 
-const PROTECTED_PAGE_PREFIXES = ["/dashboard", "/agents", "/policies", "/approvals", "/logs", "/settings"];
-const PROTECTED_API_PREFIXES = ["/api/agents", "/api/policies", "/api/actions", "/api/approvals"];
+const PROTECTED_PAGE_PREFIXES = [
+  "/dashboard",
+  "/agents",
+  "/policies",
+  "/approvals",
+  "/logs",
+  "/settings",
+  "/invite",
+];
+const PROTECTED_API_PREFIXES = [
+  "/api/agents",
+  "/api/policies",
+  "/api/actions",
+  "/api/approvals",
+  "/api/team",
+  "/api/invites",
+];
 
 export function isProtectedPagePathname(pathname: string): boolean {
   return PROTECTED_PAGE_PREFIXES.some(
