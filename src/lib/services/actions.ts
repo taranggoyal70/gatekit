@@ -5,10 +5,12 @@ import { z } from "zod";
 
 import { actions, approvals, policies } from "@/db/schema";
 import { AppError } from "@/lib/errors";
+import { sendApprovalRequestEmail } from "@/lib/notifications";
 import { evaluateAction, type RiskLevel } from "@/lib/policy-engine";
+import { getNotificationSettings } from "@/lib/services/notification-settings";
 import { toPolicyRule } from "@/lib/services/policies";
 import type { Database } from "@/lib/services/types";
-import { sendApprovalRequestEmail } from "@/lib/notifications";
+import { sendSlackApprovalNotification } from "@/lib/slack";
 
 export const evaluateInputSchema = z.object({
   actionType: z.string().min(1).max(200),
@@ -77,6 +79,12 @@ export async function evaluateAndRecordAction(
   await sendApprovalRequestEmail(orgId, action).catch((error) =>
     console.error("Failed to send approval notification", error),
   );
+
+  const notificationSettings = await getNotificationSettings(database, orgId).catch(() => null);
+  if (notificationSettings?.slackWebhookUrl) {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+    await sendSlackApprovalNotification(notificationSettings.slackWebhookUrl, action, siteUrl);
+  }
 
   return { action, approval, reason: result.reason };
 }
