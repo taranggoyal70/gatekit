@@ -9,3 +9,7 @@ coverage
 .vercel
 packages/sdk/dist
 .DS_Store
+.env*
+.agents
+.claude
+skills-lock.json

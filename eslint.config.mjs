@@ -21,6 +21,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ["packages/sdk/dist/**", ".next/**", "node_modules/**"],
+    ignores: ["packages/sdk/dist/**", ".next/**", "node_modules/**", ".agents/**", ".vercel/**"],
   },
 );
