@@ -235,12 +235,30 @@ export const subscriptions = pgTable(
   (table) => [index("subscriptions_stripe_sub_idx").on(table.stripeSubscriptionId)],
 );
 
+export const notificationSettings = pgTable("notification_settings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  orgId: uuid("org_id")
+    .notNull()
+    .references(() => organizations.id, { onDelete: "cascade" })
+    .unique(),
+  slackWebhookUrl: text("slack_webhook_url"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const organizationsRelations = relations(organizations, ({ many }) => ({
   members: many(orgMembers),
   agents: many(agents),
   policies: many(policies),
   actions: many(actions),
   invites: many(invites),
+}));
+
+export const notificationSettingsRelations = relations(notificationSettings, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [notificationSettings.orgId],
+    references: [organizations.id],
+  }),
 }));
 
 export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
@@ -315,3 +333,4 @@ export type Invite = typeof invites.$inferSelect;
 export type NewInvite = typeof invites.$inferInsert;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type NewSubscription = typeof subscriptions.$inferInsert;
+export type NotificationSettings = typeof notificationSettings.$inferSelect;
