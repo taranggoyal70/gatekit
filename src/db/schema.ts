@@ -37,6 +37,18 @@ export const approvalStatus = pgEnum("approval_status", [
   "denied",
   "expired",
 ]);
+export const inviteStatus = pgEnum("invite_status", [
+  "pending",
+  "accepted",
+  "revoked",
+  "expired",
+]);
+export const subscriptionStatus = pgEnum("subscription_status", [
+  "active",
+  "inactive",
+  "cancelled",
+  "past_due",
+]);
 
 export const organizations = pgTable("organizations", {
   id: uuid("id").primaryKey().defaultRandom(),
