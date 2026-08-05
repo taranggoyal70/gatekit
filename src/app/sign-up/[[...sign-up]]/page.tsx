@@ -1,9 +1,5 @@
-import { SignUp } from "@clerk/nextjs";
+import { AuthExperience } from "@/components/AuthExperience";
 
 export default function SignUpPage() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--background)] p-6">
-      <SignUp />
-    </div>
-  );
+  return <AuthExperience mode="sign-up" />;
 }

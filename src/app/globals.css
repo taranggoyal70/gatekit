@@ -21,10 +21,249 @@
 }
 
 body {
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
   font-family:
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Auth and application surfaces intentionally share the same runtime language. */
+.gate-auth-shell {
+  --auth-ink: #111714;
+  --auth-muted: #66706b;
+  --auth-paper: #f5f7f2;
+  --auth-signal: #ff5a36;
+  display: grid;
+  min-height: 100vh;
+  grid-template-columns: minmax(0, 1.08fr) minmax(480px, 0.92fr);
+  background: var(--auth-paper);
+  color: var(--auth-ink);
+}
+
+.gate-auth-story {
+  position: relative;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid rgba(17, 23, 20, 0.18);
+  padding: 38px clamp(38px, 6vw, 92px) 34px;
+  background:
+    linear-gradient(rgba(17, 23, 20, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 23, 20, 0.055) 1px, transparent 1px),
+    #dfe8e1;
+  background-size: 48px 48px;
+}
+
+.gate-auth-story::after {
+  position: absolute;
+  right: -80px;
+  bottom: -150px;
+  width: 380px;
+  height: 380px;
+  border: 74px solid rgba(255, 90, 54, 0.12);
+  border-radius: 50%;
+  content: "";
+}
+
+.gate-auth-brand,
+.gate-auth-mobile-brand a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  color: var(--auth-ink);
+  text-decoration: none;
+}
+
+.gate-auth-brand > span,
+.gate-auth-mobile-brand span {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  background: var(--auth-ink);
+  color: white;
+  font: 800 11px ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.gate-auth-story-copy {
+  max-width: 680px;
+  margin: auto 0 46px;
+}
+
+.gate-auth-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 28px;
+  font: 750 10px ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-transform: uppercase;
+}
+
+.gate-auth-eyebrow span {
+  width: 8px;
+  height: 8px;
+  background: var(--auth-signal);
+  box-shadow: 0 0 0 5px rgba(255, 90, 54, 0.14);
+}
+
+.gate-auth-story-copy h1 {
+  max-width: 660px;
+  margin: 0;
+  font-size: clamp(46px, 5.4vw, 78px);
+  font-weight: 760;
+  line-height: 0.96;
+}
+
+.gate-auth-story-copy h1 em {
+  color: #49645b;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+}
+
+.gate-auth-story-copy > p:last-child {
+  max-width: 570px;
+  margin: 28px 0 0;
+  color: #4e5f58;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.gate-auth-trace {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 620px);
+  border: 1px solid #1d2924;
+  background: #0e1713;
+  box-shadow: 10px 10px 0 var(--auth-signal);
+  color: #edf4ed;
+}
+
+.gate-auth-trace-head,
+.gate-auth-trace-row,
+.gate-auth-trace-decision {
+  display: grid;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding: 0 18px;
+}
+
+.gate-auth-trace-head {
+  grid-template-columns: 1fr auto;
+  min-height: 44px;
+  color: #9aa9a0;
+  font: 700 9px ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-transform: uppercase;
+}
+
+.gate-auth-trace-head span { display: flex; align-items: center; gap: 8px; color: #c9f56b; }
+.gate-auth-trace-head i { width: 6px; height: 6px; border-radius: 50%; background: #c9f56b; box-shadow: 0 0 10px #c9f56b; }
+.gate-auth-trace-row { grid-template-columns: 34px 1fr auto; min-height: 54px; }
+.gate-auth-trace-row span,
+.gate-auth-trace-row code { color: #728078; font: 500 9px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.gate-auth-trace-row strong { font-size: 12px; }
+.gate-auth-trace-decision { grid-template-columns: auto 1fr auto; gap: 20px; min-height: 60px; border-bottom: 0; color: #ffd167; }
+.gate-auth-trace-decision small,
+.gate-auth-trace-decision span { font: 600 9px ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; }
+.gate-auth-trace-decision strong { font-size: 13px; }
+
+.gate-auth-footnote {
+  position: relative;
+  z-index: 1;
+  margin: 30px 0 0;
+  color: #53625b;
+  font: 650 9px ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-transform: uppercase;
+}
+
+.gate-auth-form-panel {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 56px clamp(28px, 5vw, 80px);
+  background: #f7f8f4;
+}
+
+.gate-auth-mobile-brand { display: none; width: min(100%, 430px); margin-bottom: 28px; }
+.gate-auth-clerk-root,
+.gate-auth-clerk-box { width: min(100%, 430px) !important; }
+.gate-auth-clerk-card { width: 100% !important; border: 1px solid rgba(17, 23, 20, 0.14) !important; box-shadow: 0 18px 60px rgba(17, 23, 20, 0.08) !important; }
+.gate-auth-clerk-title { font-size: 25px !important; }
+.gate-auth-clerk-subtitle { color: var(--auth-muted) !important; }
+.gate-auth-social-button,
+.gate-auth-input { min-height: 46px !important; border-color: rgba(17, 23, 20, 0.16) !important; box-shadow: none !important; }
+.gate-auth-primary-button { min-height: 46px !important; background: var(--auth-ink) !important; box-shadow: none !important; }
+.gate-auth-back { margin-top: 24px; color: #68736e; font-size: 12px; text-decoration: none; }
+.gate-auth-back:hover { color: var(--auth-ink); }
+
+.gate-app-shell {
+  display: grid;
+  min-height: 100vh;
+  grid-template-columns: 236px minmax(0, 1fr);
+  background: #0b100e;
+  color: #eff4ef;
+}
+
+.gate-app-sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  height: 100vh;
+  flex-direction: column;
+  border-right: 1px solid rgba(255,255,255,0.09);
+  background: #0e1512;
+  padding: 22px 16px;
+}
+
+.gate-app-brand { display: flex; align-items: center; gap: 11px; color: #f5f7f3; text-decoration: none; }
+.gate-app-brand > span,
+.gate-app-mobile-mark { display: grid; width: 34px; height: 34px; place-items: center; background: #c9f56b; color: #101511; font: 800 10px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.gate-app-brand div { display: flex; flex-direction: column; gap: 1px; }
+.gate-app-brand strong { font-size: 14px; }
+.gate-app-brand small { color: #77847d; font-size: 9px; }
+
+.gate-app-runtime { display: flex; justify-content: space-between; margin: 26px 0 22px; border: 1px solid rgba(255,255,255,0.09); padding: 10px; color: #829087; font: 600 8px ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; }
+.gate-app-runtime span { display: flex; align-items: center; gap: 7px; }
+.gate-app-runtime i { width: 6px; height: 6px; border-radius: 50%; background: #53e39f; box-shadow: 0 0 8px #53e39f; }
+
+.gate-app-sidebar nav { display: flex; flex-direction: column; gap: 3px; }
+.gate-app-sidebar nav a { position: relative; display: grid; grid-template-columns: 28px 1fr auto; align-items: center; min-height: 42px; padding: 0 10px; color: #88968e; font-size: 12px; text-decoration: none; transition: color 140ms ease, background 140ms ease; }
+.gate-app-sidebar nav a > span { color: #526059; font: 500 8px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.gate-app-sidebar nav a > i { width: 6px; height: 6px; border-radius: 50%; background: #ff754f; }
+.gate-app-sidebar nav a:hover { background: rgba(255,255,255,0.04); color: #e9efea; }
+.gate-app-sidebar nav a.is-active { background: #1a241f; color: #fff; }
+.gate-app-sidebar nav a.is-active::before { position: absolute; left: 0; width: 2px; height: 20px; background: #c9f56b; content: ""; }
+
+.gate-app-sidebar-foot { display: flex; flex-direction: column; gap: 18px; margin-top: auto; border-top: 1px solid rgba(255,255,255,0.08); padding: 18px 10px 0; }
+.gate-app-sidebar-foot > a { color: #7c8981; font-size: 10px; text-decoration: none; }
+.gate-app-sidebar-foot > div { display: flex; align-items: center; gap: 9px; color: #a1ada6; font-size: 10px; }
+
+.gate-app-workspace { min-width: 0; }
+.gate-app-topbar { position: sticky; top: 0; z-index: 20; display: flex; min-height: 64px; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 clamp(20px, 4vw, 52px); background: rgba(11,16,14,0.88); backdrop-filter: blur(16px); }
+.gate-app-topbar > div { display: flex; align-items: center; gap: 12px; }
+.gate-app-topbar p { margin: 0; color: #7d8a82; font: 650 9px ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; }
+.gate-app-mobile-mark { display: none; }
+.gate-app-topbar-meta { gap: 24px !important; }
+.gate-app-topbar-meta > span { color: #6f7d75; font: 550 9px ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; }
+.gate-app-topbar-meta strong { color: #dfe7e0; font-weight: 700; }
+.gate-app-main { width: min(1180px, 100%); padding: 42px clamp(20px, 4vw, 52px) 70px; }
+
+@media (max-width: 860px) {
+  .gate-auth-shell { grid-template-columns: 1fr; }
+  .gate-auth-story { display: none; }
+  .gate-auth-mobile-brand { display: block; }
+  .gate-app-shell { grid-template-columns: 1fr; }
+  .gate-app-sidebar { display: none; }
+  .gate-app-mobile-mark { display: grid; }
+}
+
+@media (max-width: 560px) {
+  .gate-auth-form-panel { justify-content: flex-start; padding: 28px 18px 44px; }
+  .gate-app-topbar-meta > span { display: none; }
 }
 
 /*
@@ -51,7 +290,7 @@ body {
 }
 
 .gate-site {
-  --gate-paper: #f3f0e8;
+  --gate-paper: #edf1ed;
   --gate-ink: #111815;
   --gate-signal: #d9ff3f;
   --gate-line: rgba(17, 24, 21, 0.18);
@@ -66,7 +305,7 @@ body {
   top: 0;
   z-index: 30;
   border-bottom: 1px solid var(--gate-line);
-  background: rgba(243, 240, 232, 0.92);
+  background: rgba(237, 241, 237, 0.92);
   backdrop-filter: blur(16px);
 }
 
