@@ -152,30 +152,18 @@ Full method: [eval/README.md](eval/README.md).
 
 ```mermaid
 flowchart TB
-  subgraph agent ["Your agent process"]
-    direction LR
-    A["guard(action, fn)"] --> SDK["@gatekit/sdk"]
-  end
-  subgraph gatekit ["Gatekit (Next.js)"]
-    direction LR
-    API["POST /api/v1/evaluate<br/>agent key, rate limit, 20 KB cap"] --> ENG["Policy engine<br/>first match by priority"]
-    ENG --> TX["One transaction:<br/>action + approval + audit event"]
-  end
-  subgraph store ["Postgres"]
-    direction LR
-    ACT[("actions, approvals")]
-    AUD[("audit_events<br/>hash chain, append-only trigger")]
-  end
-  subgraph humans ["People"]
-    direction LR
-    DASH["Dashboard (Clerk)<br/>policies, approvals queue"] --> VER["Audit log page<br/>GET /api/audit/verify"]
-  end
-  SDK --> API
-  TX --> ACT
-  TX --> AUD
-  TX -. "after commit" .-> NOTE["Email (Resend), Slack"]
-  DASH -- "approve / deny" --> TX
-  VER -- "recompute hashes,<br/>cross-check actions" --> AUD
+  AG["Agent calls guard(action, fn)"] -- "POST /api/v1/evaluate" --> API["Agent key, rate limit,<br/>body validation"]
+  API --> ENG["Policy engine<br/>first enabled match by priority"]
+  ENG --> TX["One Postgres transaction<br/>action + approval + audit event"]
+  TX --> CHAIN[("audit_events<br/>per-org SHA-256 chain<br/>append-only trigger")]
+  TX --> D{"Decision"}
+  D -- allow --> RUN["fn() runs"]
+  D -- deny --> STOP["GatekitDeniedError<br/>fn() never runs"]
+  D -- require_approval --> Q["Approvals queue<br/>dashboard, email, Slack"]
+  Q -- approved --> RUN
+  Q -- "denied or expired" --> STOP
+  Q -. "decision appended" .-> CHAIN
+  VER["Audit log page<br/>GET /api/audit/verify"] -. "recompute hashes,<br/>cross-check actions" .-> CHAIN
 ```
 
 1. The agent calls `guard({ actionType, target, riskLevel }, fn)`. The SDK
