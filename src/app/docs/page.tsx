@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { siteUrl } from "@/lib/site";
+
 export const metadata: Metadata = {
   title: "Docs — Gatekit",
   description: "Gatekit API reference: evaluate, guard, and the policy rule format.",
 };
 
 export default function DocsPage() {
+  const base = siteUrl();
   return (
     <div className="min-h-screen">
       <header className="border-b border-[var(--line)]">
@@ -25,7 +28,15 @@ export default function DocsPage() {
         <h1 className="text-3xl font-semibold tracking-tight">Documentation</h1>
 
         <Section title="Install">
-          <Code>{`npm install @gatekit/sdk`}</Code>
+          <p className="mb-3 text-sm text-[var(--foreground)]/70">
+            <code>@gatekit/sdk</code> is not on npm yet. Build it from the repository and install
+            the tarball, or call the REST API below from any language.
+          </p>
+          <Code>{`git clone https://github.com/taranggoyal70/gatekit.git
+cd gatekit && pnpm install
+cd packages/sdk && npx tsc -p . && npm pack
+# in your agent's project:
+npm install /path/to/gatekit/packages/sdk/gatekit-sdk-0.1.0.tgz`}</Code>
         </Section>
 
         <Section title="Quick start">
@@ -34,7 +45,10 @@ export default function DocsPage() {
           </p>
           <Code>{`import { GatekitClient } from "@gatekit/sdk";
 
-const gatekit = new GatekitClient({ apiKey: process.env.GATEKIT_KEY! });
+const gatekit = new GatekitClient({
+  apiKey: process.env.GATEKIT_KEY!,
+  baseUrl: "${base}",
+});
 
 const result = await gatekit.guard(
   { actionType: "email.send", target: "user@example.com", riskLevel: "medium" },
@@ -85,7 +99,7 @@ const result = await gatekit.guard(
           <p className="mb-3 text-sm text-[var(--foreground)]/70">
             The SDK is a thin wrapper over this — call it directly from any language.
           </p>
-          <Code>{`curl -X POST https://api.gatekit.dev/api/v1/evaluate \\
+          <Code>{`curl -X POST ${base}/api/v1/evaluate \\
   -H "Authorization: Bearer gk_live_your_agent_key" \\
   -H "Content-Type: application/json" \\
   -d '{"actionType":"email.send","target":"user@example.com","riskLevel":"low"}'`}</Code>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LandingDecisionConsole } from "@/components/LandingDecisionConsole";
+import { siteUrl } from "@/lib/site";
 
 export default function LandingPage() {
   return (
@@ -63,7 +64,10 @@ export default function LandingPage() {
             <pre>
 {`import { GatekitClient } from "@gatekit/sdk";
 
-const gatekit = new GatekitClient({ apiKey: process.env.GATEKIT_KEY! });
+const gatekit = new GatekitClient({
+  apiKey: process.env.GATEKIT_KEY!,
+  baseUrl: "${siteUrl()}",
+});
 
 await gatekit.guard(
   { actionType: "payment.refund", target: customerId, riskLevel: "high" },
