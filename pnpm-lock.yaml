@@ -13,7 +13,7 @@ importers:
         version: 7.5.20(next@16.2.10(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       drizzle-orm:
         specifier: ^0.45.2
-        version: 0.45.2(postgres@3.4.9)
+        version: 0.45.2(@electric-sql/pglite@0.5.16)(postgres@3.4.9)
       nanoid:
         specifier: ^6.0.0
         version: 6.0.0
@@ -39,6 +39,9 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
+      '@electric-sql/pglite':
+        specifier: ^0.5.16
+        version: 0.5.16
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.7.0(jiti@2.7.0))
@@ -124,6 +127,9 @@ packages:
 
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
+
+  '@electric-sql/pglite@0.5.16':
+    resolution: {integrity: sha512-Nj8KcIsJL748W408U2N8q4+9IlONdpRIU8MJypIAAINMJ5nqKyqpX7Mgg/5XKkXiAib3AoZGR6hnJFlrlLBrcg==}
 
   '@emnapi/core@1.11.1':
     resolution: {integrity: sha512-RSvbQmHzdKzNsLYa/wHrbc3KN4sYLKAdPZxqiM2HATqv/SBk2/ENSHpvXGaLOMcsAyz0poEGqkmmKYG3OWiJEQ==}
@@ -2175,6 +2181,8 @@ snapshots:
 
   '@drizzle-team/brocli@0.10.2': {}
 
+  '@electric-sql/pglite@0.5.16': {}
+
   '@emnapi/core@1.11.1':
     dependencies:
       '@emnapi/wasi-threads': 1.2.2
@@ -3004,8 +3012,9 @@ snapshots:
       esbuild: 0.25.12
       tsx: 4.23.1
 
-  drizzle-orm@0.45.2(postgres@3.4.9):
+  drizzle-orm@0.45.2(@electric-sql/pglite@0.5.16)(postgres@3.4.9):
     optionalDependencies:
+      '@electric-sql/pglite': 0.5.16
       postgres: 3.4.9
 
   enhanced-resolve@5.24.3:

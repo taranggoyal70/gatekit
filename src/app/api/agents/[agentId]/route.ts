@@ -1,6 +1,6 @@
 import { db } from "@/db/client";
 import { requireOrgContext } from "@/lib/auth";
-import { toErrorResponse } from "@/lib/errors";
+import { parseId, toErrorResponse } from "@/lib/errors";
 import { revokeAgent } from "@/lib/services/agents";
 
 export async function DELETE(
@@ -9,7 +9,7 @@ export async function DELETE(
 ) {
   try {
     const { org } = await requireOrgContext();
-    const { agentId } = await context.params;
+    const agentId = parseId((await context.params).agentId, "Agent");
     const agent = await revokeAgent(db(), org.id, agentId);
     return Response.json({ agent });
   } catch (error) {

@@ -1,6 +1,6 @@
 import { db } from "@/db/client";
 import { requireOrgContext } from "@/lib/auth";
-import { toErrorResponse } from "@/lib/errors";
+import { readJsonBody, toErrorResponse } from "@/lib/errors";
 import { createPolicy, listPolicies, policyInputSchema } from "@/lib/services/policies";
 
 export async function GET() {
@@ -15,10 +15,10 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { org } = await requireOrgContext();
-    const raw = await request.json();
+    const { org, user } = await requireOrgContext();
+    const raw = await readJsonBody(request);
     const input = policyInputSchema.parse(raw);
-    const policy = await createPolicy(db(), org.id, input);
+    const policy = await createPolicy(db(), org.id, input, `user:${user.userId}`);
     return Response.json({ policy }, { status: 201 });
   } catch (error) {
     return toErrorResponse(error);

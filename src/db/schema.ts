@@ -187,6 +187,34 @@ export const approvals = pgTable(
   ],
 );
 
+/**
+ * Append-only, hash-chained governance log (see src/lib/audit-chain.ts).
+ * `actionId` deliberately has no foreign key: the audit record must outlive
+ * any row it describes. A database trigger (migration 0005) rejects UPDATE
+ * and direct DELETE; only an organization's own cascade delete removes rows.
+ */
+export const auditEvents = pgTable(
+  "audit_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    orgId: uuid("org_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    seq: integer("seq").notNull(),
+    eventType: text("event_type").notNull(),
+    actionId: uuid("action_id"),
+    actor: text("actor").notNull(),
+    payload: jsonb("payload").$type<Record<string, unknown>>().notNull(),
+    prevHash: text("prev_hash").notNull(),
+    hash: text("hash").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("audit_events_org_seq_idx").on(table.orgId, table.seq),
+    index("audit_events_org_action_idx").on(table.orgId, table.actionId),
+  ],
+);
+
 export const invites = pgTable(
   "invites",
   {
@@ -334,3 +362,4 @@ export type NewInvite = typeof invites.$inferInsert;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type NewSubscription = typeof subscriptions.$inferInsert;
 export type NotificationSettings = typeof notificationSettings.$inferSelect;
+export type AuditEvent = typeof auditEvents.$inferSelect;

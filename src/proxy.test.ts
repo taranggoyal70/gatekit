@@ -24,6 +24,8 @@ describe("isProtectedApiPathname", () => {
     expect(isProtectedApiPathname("/api/billing/status")).toBe(true);
     expect(isProtectedApiPathname("/api/settings/notifications")).toBe(true);
     expect(isProtectedApiPathname("/api/settings/notifications/test")).toBe(true);
+    expect(isProtectedApiPathname("/api/audit/verify")).toBe(true);
+    expect(isProtectedApiPathname("/api/audit/events")).toBe(true);
   });
 
   it("does NOT protect the Stripe webhook — Stripe has no Clerk session", () => {

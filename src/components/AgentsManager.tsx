@@ -55,9 +55,19 @@ export function AgentsManager() {
     }
   }
 
+  // A failed revoke must never look like a successful one: the key would
+  // still authenticate while the UI showed it gone.
   async function revoke(agentId: string) {
+    const previous = agents;
+    setError(null);
     setAgents((prev) => prev?.filter((a) => a.id !== agentId) ?? null);
-    await fetch(`/api/agents/${agentId}`, { method: "DELETE" });
+    try {
+      const res = await fetch(`/api/agents/${agentId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+    } catch {
+      setAgents(previous);
+      setError("Could not revoke the key. It is still active; try again.");
+    }
   }
 
   return (

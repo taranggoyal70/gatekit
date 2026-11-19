@@ -18,6 +18,7 @@ const PROTECTED_API_PREFIXES = [
   "/api/invites",
   "/api/billing",
   "/api/settings",
+  "/api/audit",
 ];
 
 // Stripe calls this directly with its own signature, not a Clerk session —

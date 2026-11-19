@@ -72,20 +72,41 @@ export function PoliciesEditor() {
     }
   }
 
+  // Optimistic, but never left wrong: if the server refuses, restore the
+  // previous list and say so. A governance UI must not show a policy as
+  // enabled when it is not.
   async function toggleEnabled(policy: Policy) {
+    const previous = policies;
+    setError(null);
     setPolicies((prev) =>
       prev?.map((p) => (p.id === policy.id ? { ...p, enabled: !p.enabled } : p)) ?? null,
     );
-    await fetch(`/api/policies/${policy.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ enabled: !policy.enabled }),
-    });
+    try {
+      const res = await fetch(`/api/policies/${policy.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled: !policy.enabled }),
+      });
+      if (!res.ok) throw new Error();
+      const data = (await res.json()) as { policy: Policy };
+      setPolicies((prev) => prev?.map((p) => (p.id === policy.id ? data.policy : p)) ?? null);
+    } catch {
+      setPolicies(previous);
+      setError(`Could not ${policy.enabled ? "disable" : "enable"} "${policy.name}". Nothing changed.`);
+    }
   }
 
   async function remove(policyId: string) {
+    const previous = policies;
+    setError(null);
     setPolicies((prev) => prev?.filter((p) => p.id !== policyId) ?? null);
-    await fetch(`/api/policies/${policyId}`, { method: "DELETE" });
+    try {
+      const res = await fetch(`/api/policies/${policyId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+    } catch {
+      setPolicies(previous);
+      setError("Could not delete the policy. Nothing changed.");
+    }
   }
 
   return (
