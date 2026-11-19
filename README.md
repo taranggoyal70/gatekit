@@ -2,7 +2,7 @@
 
 # Gatekit
 
-**Stop an AI agent's risky action before it runs, put a human in front of the ones that need one, and keep a record nobody can quietly rewrite.**
+**Allow, deny or hold every AI agent action before it runs, with a record nobody can quietly rewrite.**
 
 [Demo](https://gatekit.vercel.app) · [Docs](https://gatekit.vercel.app/docs) · [Measured results](#measured-results) · [How it works](#how-it-works) · [Quick start](#quick-start)
 
@@ -37,18 +37,18 @@ compliance reviewer can check.
 <table>
   <tr>
     <td width="50%"><img src="assets/readme/landing.jpg" alt="Gatekit landing page: headline 'Agents move fast. Gatekit decides faster.' beside an example policy trace in which a high-risk payment.refund matches 'High-risk refunds need finance approval' at priority 35 and is marked APPROVAL REQUIRED."></td>
-    <td width="50%"><img src="assets/readme/sdk.jpg" alt="Landing page SDK section: 'Wrap the action. Keep your stack.' beside a TypeScript snippet that creates a GatekitClient with an API key and base URL, then calls gatekit.guard around a Stripe refund."></td>
+    <td width="50%"><img src="assets/readme/sdk.jpg" alt="Code sample from the Gatekit landing page, refund-agent.ts: create a GatekitClient with an API key and base URL https://gatekit.vercel.app, then call gatekit.guard with a high-risk payment.refund action around a Stripe refund."></td>
   </tr>
   <tr>
     <td><b>Landing page.</b> The trace on the right is a worked example of how one policy decides one action; it is labelled as an example, not live traffic.</td>
     <td><b>One call per action.</b> <code>guard()</code> runs your function only if Gatekit allows it, or once a human approves it.</td>
   </tr>
   <tr>
-    <td><img src="assets/readme/docs-quickstart.jpg" alt="Gatekit documentation page: an Install section explaining that @gatekit/sdk is not on npm yet, with commands to build it from the repository and install the tarball, followed by a quick start that creates a client with baseUrl https://gatekit.vercel.app and guards an email.send call."></td>
+    <td><img src="assets/readme/docs-quickstart.jpg" alt="Gatekit documentation, quick start: create a GatekitClient with baseUrl https://gatekit.vercel.app and guard an email.send call; guard() runs the function if allowed, throws GatekitDeniedError if denied, and polls if held for approval."></td>
     <td><img src="assets/readme/docs-rest.jpg" alt="Gatekit documentation page: the policy rules section explaining priority order, wildcard patterns and the default hold for high and critical risk, followed by a curl example posting an email.send action to https://gatekit.vercel.app/api/v1/evaluate with a bearer agent key."></td>
   </tr>
   <tr>
-    <td><b>Docs, install and quick start.</b> The SDK is not published to npm yet, and the docs say so instead of showing an install that fails.</td>
+    <td><b>Docs quick start.</b> Every example sets <code>baseUrl</code> to the real host, and the install section says plainly that the SDK is not on npm yet.</td>
     <td><b>Docs, rules and REST.</b> The SDK is a thin wrapper over one HTTP endpoint, so any language can call it.</td>
   </tr>
 </table>

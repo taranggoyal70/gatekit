@@ -42,13 +42,15 @@ tools' Animations panel.
 
 ## Screenshots
 
-`landing.jpg` (1440x800), `sdk.jpg` (1440x440), `docs-quickstart.jpg`
-(1100x920) and `docs-rest.jpg` (1100x448) were captured on 2026-11-19 from a local
+`landing.jpg` (1440x800), `sdk.jpg` (825x458, the landing page's code
+sample), `docs-quickstart.jpg` (1100x500) and `docs-rest.jpg` (1100x500) were
+captured on 2026-11-19 from a local
 production build of this branch (`next build && next start`), not from the
 live deployment, which still runs the previous version. The build used
 `NEXT_PUBLIC_SITE_URL=https://gatekit.vercel.app` so the docs show the real
 host, and inert Clerk keys so public pages render without a sign-in. Headless
-Chrome at device scale 1; crops only, no retouching.
+Chrome at device scale 1; crops only, no retouching. Each row of the README
+grid shares one aspect ratio so the table lines up.
 
 Dashboard screenshots (policies, approvals, audit log) need a signed-in
 organization and are not included yet.
