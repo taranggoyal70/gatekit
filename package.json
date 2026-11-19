@@ -17,7 +17,9 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "eval": "tsx --conditions=react-server eval/run.ts",
-    "eval:check": "tsx --conditions=react-server eval/run.ts --check"
+    "eval:check": "tsx --conditions=react-server eval/run.ts --check",
+    "readme:assets": "tsx --conditions=react-server scripts/readme-assets.ts",
+    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm eval:check && pnpm readme:assets --check"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.5.20",
