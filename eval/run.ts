@@ -157,9 +157,24 @@ function score(cases: Case[], rules: PolicyRule[]) {
   const shouldGate = perClass.deny.support + perClass.require_approval.support;
   const unsafeAllows = confusion.deny.allow + confusion.require_approval.allow;
 
+  // Per tag, so edge cases cannot hide inside (or drag down) the headline.
+  const tagNames = [...new Set(cases.flatMap((testCase) => testCase.tags?.length ? testCase.tags : ["ordinary"]))].sort();
+  const byTag = Object.fromEntries(
+    tagNames.map((tag) => {
+      const inTag = cases.filter((testCase) =>
+        tag === "ordinary" ? !testCase.tags?.length : testCase.tags?.includes(tag),
+      );
+      const right = inTag.filter((testCase) => evaluateAction(testCase, rules).decision === testCase.expected).length;
+      const gated = inTag.filter((testCase) => testCase.expected !== "allow");
+      const leaked = gated.filter((testCase) => evaluateAction(testCase, rules).decision === "allow").length;
+      return [tag, { cases: inTag.length, correct: right, unsafeAllows: leaked, shouldBeGated: gated.length }];
+    }),
+  );
+
   return {
     cases: total,
     correct,
+    byTag,
     accuracy: pct(correct, total),
     perClass,
     confusion,
@@ -655,6 +670,11 @@ function renderMarkdown(results: Results) {
       lines.push(
         `| \`${decision}\` | ${k.support} | ${k.correct}/${k.predicted} (${fmt(k.precision)}) | ${k.correct}/${k.support} (${fmt(k.recall)}) |`,
       );
+    }
+    lines.push("", "By case type:", "");
+    lines.push("| Case type | Cases | Correct | Unsafe allows |", "| :--- | ---: | ---: | ---: |");
+    for (const [tag, t] of Object.entries(c.byTag)) {
+      lines.push(`| ${tag} | ${t.cases} | ${t.correct} | ${t.unsafeAllows}/${t.shouldBeGated} |`);
     }
     lines.push("", "Confusion (rows: expected, columns: engine):", "");
     lines.push("| | allow | deny | require_approval |", "| :--- | ---: | ---: | ---: |");

@@ -6,9 +6,18 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  lint-typecheck:
+  verify:
+    name: Lint, typecheck, tests (PGlite), eval and README assets
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -19,9 +28,17 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
+      - name: Tests on in-process PGlite
+        run: pnpm test
+      - name: Eval reproduces the committed results
+        run: pnpm eval:check
+      - name: README graphics match their source data
+        run: pnpm readme:assets --check
 
-  test:
+  test-postgres:
+    name: Tests on Postgres 16 (real concurrency)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     services:
       postgres:
         image: postgres:16-alpine
@@ -52,6 +69,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -62,6 +80,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
         env:
+          # Build-time placeholders only: the build never connects to Clerk or
+          # Postgres. Real values are configured in the deployment.
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_placeholder
           CLERK_SECRET_KEY: sk_test_placeholder
           DATABASE_URL: postgres://postgres:test@localhost:5432/placeholder

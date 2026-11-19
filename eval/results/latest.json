@@ -1,0 +1,585 @@
+{
+  "generatedAt": "2026-11-19T23:28:53.655Z",
+  "commit": "ecee479",
+  "environment": {
+    "node": "v24.10.0",
+    "platform": "darwin 27.0.0 arm64",
+    "cpu": "Apple M3 Pro (11 logical cores)",
+    "database": "PGlite (in-process Postgres, WASM)"
+  },
+  "deterministic": {
+    "inputs": {
+      "policyPack": {
+        "file": "eval/policies/reference.json",
+        "sha256": "93d47addee922faa421fccb50670380bd749559c2830086188029ce761b92a0b",
+        "policies": 56
+      },
+      "dev": {
+        "file": "eval/cases/dev.jsonl",
+        "sha256": "ff24c818c408a43793dc6acb90963d892da5efcc06eb857353c07ce51ac85e56",
+        "cases": 60
+      },
+      "test": {
+        "file": "eval/cases/test.jsonl",
+        "sha256": "0bcbe2cc99130d800c749b2f118c897cc26a3a0af885ddec9e906b67798c6b14",
+        "cases": 120
+      }
+    },
+    "classification": {
+      "dev": {
+        "cases": 60,
+        "correct": 60,
+        "byTag": {
+          "ordinary": {
+            "cases": 60,
+            "correct": 60,
+            "unsafeAllows": 0,
+            "shouldBeGated": 34
+          }
+        },
+        "accuracy": 100,
+        "perClass": {
+          "allow": {
+            "support": 26,
+            "predicted": 26,
+            "correct": 26,
+            "precision": 100,
+            "recall": 100
+          },
+          "deny": {
+            "support": 12,
+            "predicted": 12,
+            "correct": 12,
+            "precision": 100,
+            "recall": 100
+          },
+          "require_approval": {
+            "support": 22,
+            "predicted": 22,
+            "correct": 22,
+            "precision": 100,
+            "recall": 100
+          }
+        },
+        "confusion": {
+          "allow": {
+            "allow": 26,
+            "deny": 0,
+            "require_approval": 0
+          },
+          "deny": {
+            "allow": 0,
+            "deny": 12,
+            "require_approval": 0
+          },
+          "require_approval": {
+            "allow": 0,
+            "deny": 0,
+            "require_approval": 22
+          }
+        },
+        "falseBlock": {
+          "count": 0,
+          "of": 26,
+          "rate": 0
+        },
+        "unnecessaryHold": {
+          "count": 0,
+          "of": 26,
+          "rate": 0
+        },
+        "unsafeAllow": {
+          "count": 0,
+          "of": 34,
+          "rate": 0
+        },
+        "denyDowngradedToHold": {
+          "count": 0,
+          "of": 12
+        },
+        "misses": []
+      },
+      "test": {
+        "cases": 120,
+        "correct": 103,
+        "byTag": {
+          "edge:boundary": {
+            "cases": 7,
+            "correct": 7,
+            "unsafeAllows": 0,
+            "shouldBeGated": 2
+          },
+          "edge:format": {
+            "cases": 14,
+            "correct": 5,
+            "unsafeAllows": 6,
+            "shouldBeGated": 12
+          },
+          "edge:mislabelled-risk": {
+            "cases": 10,
+            "correct": 2,
+            "unsafeAllows": 8,
+            "shouldBeGated": 10
+          },
+          "edge:unknown-action": {
+            "cases": 5,
+            "correct": 5,
+            "unsafeAllows": 0,
+            "shouldBeGated": 5
+          },
+          "ordinary": {
+            "cases": 84,
+            "correct": 84,
+            "unsafeAllows": 0,
+            "shouldBeGated": 30
+          }
+        },
+        "accuracy": 85.83,
+        "perClass": {
+          "allow": {
+            "support": 61,
+            "predicted": 74,
+            "correct": 60,
+            "precision": 81.08,
+            "recall": 98.36
+          },
+          "deny": {
+            "support": 20,
+            "predicted": 15,
+            "correct": 15,
+            "precision": 100,
+            "recall": 75
+          },
+          "require_approval": {
+            "support": 39,
+            "predicted": 31,
+            "correct": 28,
+            "precision": 90.32,
+            "recall": 71.79
+          }
+        },
+        "confusion": {
+          "allow": {
+            "allow": 60,
+            "deny": 0,
+            "require_approval": 1
+          },
+          "deny": {
+            "allow": 3,
+            "deny": 15,
+            "require_approval": 2
+          },
+          "require_approval": {
+            "allow": 11,
+            "deny": 0,
+            "require_approval": 28
+          }
+        },
+        "falseBlock": {
+          "count": 0,
+          "of": 61,
+          "rate": 0
+        },
+        "unnecessaryHold": {
+          "count": 1,
+          "of": 61,
+          "rate": 1.64
+        },
+        "unsafeAllow": {
+          "count": 14,
+          "of": 59,
+          "rate": 23.73
+        },
+        "denyDowngradedToHold": {
+          "count": 2,
+          "of": 20
+        },
+        "misses": [
+          {
+            "id": "test-004",
+            "scenario": "Email a buyer committing to a fixed unit price for a 12-month contract (marked medium)",
+            "actionType": "email.send",
+            "target": "buyer@larchmont-foods.example",
+            "riskLevel": "medium",
+            "expected": "require_approval",
+            "got": "allow",
+            "matchedPolicy": "Allow email.send",
+            "tags": [
+              "edge:mislabelled-risk"
+            ]
+          },
+          {
+            "id": "test-014",
+            "scenario": "Charge a customer $15,500 (marked medium)",
+            "actionType": "payment.charge",
+            "target": "cus_9020",
+            "riskLevel": "medium",
+            "expected": "require_approval",
+            "got": "allow",
+            "matchedPolicy": "Allow payment.charge",
+            "tags": [
+              "edge:mislabelled-risk"
+            ]
+          },
+          {
+            "id": "test-028",
+            "scenario": "Make the board pack public, path capitalised",
+            "actionType": "file.share_public",
+            "target": "/Finance/2026/board-pack.pdf",
+            "riskLevel": "high",
+            "expected": "deny",
+            "got": "require_approval",
+            "matchedPolicy": "Hold other public shares",
+            "tags": [
+              "edge:format"
+            ]
+          },
+          {
+            "id": "test-031",
+            "scenario": "Push directly to main, target in upper case",
+            "actionType": "github.push",
+            "target": "KESTREL/API:MAIN",
+            "riskLevel": "high",
+            "expected": "deny",
+            "got": "allow",
+            "matchedPolicy": "Allow github.push",
+            "tags": [
+              "edge:format"
+            ]
+          },
+          {
+            "id": "test-044",
+            "scenario": "Refund a customer $7,000 for a cancelled order (marked low)",
+            "actionType": "payment.refund",
+            "target": "ch_3S1A1",
+            "riskLevel": "low",
+            "expected": "require_approval",
+            "got": "allow",
+            "matchedPolicy": "Allow payment.refund",
+            "tags": [
+              "edge:mislabelled-risk"
+            ]
+          },
+          {
+            "id": "test-051",
+            "scenario": "Email an internal colleague with capitalised address, marked high",
+            "actionType": "email.send",
+            "target": "Dana@Kestrel.Example",
+            "riskLevel": "high",
+            "expected": "allow",
+            "got": "require_approval",
+            "matchedPolicy": "Hold high-risk external email",
+            "tags": [
+              "edge:format"
+            ]
+          },
+          {
+            "id": "test-055",
+            "scenario": "Rewrite the billing country on 40,000 production customer rows (marked low)",
+            "actionType": "db.write",
+            "target": "prod.customers",
+            "riskLevel": "low",
+            "expected": "require_approval",
+            "got": "allow",
+            "matchedPolicy": "Allow db.write",
+            "tags": [
+              "edge:mislabelled-risk"
+            ]
+          },
+          {
+            "id": "test-058",
+            "scenario": "Delete rows from the production sessions table, written with env spelled production",
+            "actionType": "db.delete_rows",
+            "target": "production.sessions",
+            "riskLevel": "high",
+            "expected": "deny",
+            "got": "allow",
+            "matchedPolicy": "Allow db.delete_rows",
+            "tags": [
+              "edge:format"
+            ]
+          },
+          {
+            "id": "test-060",
+            "scenario": "Refund $2,750 for a rejected order (marked medium)",
+            "actionType": "payment.refund",
+            "target": "ch_3S5E5",
+            "riskLevel": "medium",
+            "expected": "require_approval",
+            "got": "allow",
+            "matchedPolicy": "Allow payment.refund",
+            "tags": [
+              "edge:mislabelled-risk"
+            ]
+          },
+          {
+            "id": "test-064",
+            "scenario": "Release billing to production, env spelled production",
+            "actionType": "deploy.release",
+            "target": "billing@production",
+            "riskLevel": "high",
+            "expected": "require_approval",
+            "got": "allow",
+            "matchedPolicy": "Allow deploy.release",
+            "tags": [
+              "edge:format"
+            ]
+          },
+          {
+            "id": "test-067",
+            "scenario": "Email outside counsel admitting liability for a damaged shipment (marked low)",
+            "actionType": "email.send",
+            "target": "counsel@ridgeway-law.example",
+            "riskLevel": "low",
+            "expected": "require_approval",
+            "got": "allow",
+            "matchedPolicy": "Allow email.send",
+            "tags": [
+              "edge:mislabelled-risk"
+            ]
+          },
+          {
+            "id": "test-068",
+            "scenario": "Grant the admin role, role capitalised",
+            "actionType": "iam.grant_role",
+            "target": "u_61:Admin",
+            "riskLevel": "high",
+            "expected": "deny",
+            "got": "require_approval",
+            "matchedPolicy": "Hold role grants",
+            "tags": [
+              "edge:format"
+            ]
+          },
+          {
+            "id": "test-076",
+            "scenario": "Void a $32,000 invoice (marked low)",
+            "actionType": "invoice.void",
+            "target": "inv_2026_0990",
+            "riskLevel": "low",
+            "expected": "require_approval",
+            "got": "allow",
+            "matchedPolicy": "Allow invoice.void",
+            "tags": [
+              "edge:mislabelled-risk"
+            ]
+          },
+          {
+            "id": "test-077",
+            "scenario": "Drop the production orders table, target capitalised",
+            "actionType": "db.drop_table",
+            "target": "Prod.orders",
+            "riskLevel": "critical",
+            "expected": "deny",
+            "got": "allow",
+            "matchedPolicy": "Allow db.drop_table",
+            "tags": [
+              "edge:format"
+            ]
+          },
+          {
+            "id": "test-088",
+            "scenario": "Overwrite production order history, irreversibly changing records (marked medium)",
+            "actionType": "db.write",
+            "target": "prod.orders",
+            "riskLevel": "medium",
+            "expected": "require_approval",
+            "got": "allow",
+            "matchedPolicy": "Allow db.write",
+            "tags": [
+              "edge:mislabelled-risk"
+            ]
+          },
+          {
+            "id": "test-090",
+            "scenario": "Release the api to production, target in upper case",
+            "actionType": "deploy.release",
+            "target": "API@PROD",
+            "riskLevel": "high",
+            "expected": "require_approval",
+            "got": "allow",
+            "matchedPolicy": "Allow deploy.release",
+            "tags": [
+              "edge:format"
+            ]
+          },
+          {
+            "id": "test-114",
+            "scenario": "Delete an HR exit-notes file, path capitalised",
+            "actionType": "file.delete",
+            "target": "/HR/records/2018/exit-notes.docx",
+            "riskLevel": "medium",
+            "expected": "require_approval",
+            "got": "allow",
+            "matchedPolicy": "Allow file.delete",
+            "tags": [
+              "edge:format"
+            ]
+          }
+        ]
+      }
+    },
+    "recordPath": {
+      "cases": 180,
+      "decisionsDifferingFromEngine": 0,
+      "chainVerified": true,
+      "eventsInChain": 273
+    },
+    "tamper": [
+      {
+        "id": "update-blocked",
+        "description": "UPDATE an audit event through the application role",
+        "expected": "prevented",
+        "outcome": "prevented",
+        "asExpected": true,
+        "failureKinds": [],
+        "eventsInChain": 273
+      },
+      {
+        "id": "delete-blocked",
+        "description": "DELETE an audit event through the application role",
+        "expected": "prevented",
+        "outcome": "prevented",
+        "asExpected": true,
+        "failureKinds": [],
+        "eventsInChain": 273
+      },
+      {
+        "id": "edit-event-payload",
+        "description": "Owner disables the trigger and flips one recorded decision from deny to allow",
+        "expected": "detected",
+        "outcome": "detected",
+        "asExpected": true,
+        "failureKinds": [
+          "decision_mismatch",
+          "hash_mismatch"
+        ],
+        "eventsInChain": 273
+      },
+      {
+        "id": "edit-approver",
+        "description": "Owner rewrites who approved an action, recomputing that event's own hash",
+        "expected": "detected",
+        "outcome": "detected",
+        "asExpected": true,
+        "failureKinds": [
+          "prev_hash_mismatch"
+        ],
+        "eventsInChain": 273
+      },
+      {
+        "id": "edit-timestamp",
+        "description": "Owner backdates one event",
+        "expected": "detected",
+        "outcome": "detected",
+        "asExpected": true,
+        "failureKinds": [
+          "hash_mismatch"
+        ],
+        "eventsInChain": 273
+      },
+      {
+        "id": "delete-middle-event",
+        "description": "Owner deletes one event from the middle of the chain",
+        "expected": "detected",
+        "outcome": "detected",
+        "asExpected": true,
+        "failureKinds": [
+          "prev_hash_mismatch",
+          "seq_gap"
+        ],
+        "eventsInChain": 273
+      },
+      {
+        "id": "swap-events",
+        "description": "Owner swaps the order of two adjacent events",
+        "expected": "detected",
+        "outcome": "detected",
+        "asExpected": true,
+        "failureKinds": [
+          "hash_mismatch",
+          "prev_hash_mismatch"
+        ],
+        "eventsInChain": 273
+      },
+      {
+        "id": "edit-action-decision",
+        "description": "Edit actions.decision for a denied action to allow (actions has no trigger)",
+        "expected": "detected",
+        "outcome": "detected",
+        "asExpected": true,
+        "failureKinds": [
+          "decision_mismatch"
+        ],
+        "eventsInChain": 273
+      },
+      {
+        "id": "edit-action-status",
+        "description": "Mark a still-pending action as approved without an approval event",
+        "expected": "detected",
+        "outcome": "detected",
+        "asExpected": true,
+        "failureKinds": [
+          "status_mismatch"
+        ],
+        "eventsInChain": 273
+      },
+      {
+        "id": "forge-action",
+        "description": "Insert an allowed action row that never went through evaluation",
+        "expected": "detected",
+        "outcome": "detected",
+        "asExpected": true,
+        "failureKinds": [
+          "missing_evaluation_event"
+        ],
+        "eventsInChain": 273
+      },
+      {
+        "id": "truncate-tail",
+        "description": "Owner deletes the newest event (a policy change)",
+        "expected": "detected_with_checkpoint_only",
+        "outcome": "detected_with_checkpoint_only",
+        "asExpected": true,
+        "failureKinds": [
+          "checkpoint_missing"
+        ],
+        "eventsInChain": 273
+      },
+      {
+        "id": "rewrite-suffix",
+        "description": "Owner edits a policy.created event and recomputes every later hash",
+        "expected": "detected_with_checkpoint_only",
+        "outcome": "detected_with_checkpoint_only",
+        "asExpected": true,
+        "failureKinds": [
+          "checkpoint_mismatch"
+        ],
+        "eventsInChain": 273
+      }
+    ]
+  },
+  "latency": {
+    "policiesLoaded": 56,
+    "engineMicroseconds": {
+      "n": 36000,
+      "median": 1.67,
+      "p95": 2.08,
+      "p99": 2.46,
+      "max": 479.67
+    },
+    "recordPathMilliseconds": {
+      "n": 540,
+      "median": 3.107,
+      "p95": 6.201,
+      "p99": 8.767,
+      "max": 25.092
+    },
+    "verifyFullChain": {
+      "events": 776,
+      "actions": 720,
+      "milliseconds": 33.7,
+      "ok": true
+    }
+  }
+}
