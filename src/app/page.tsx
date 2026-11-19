@@ -22,7 +22,7 @@ export default function LandingPage() {
       <main>
         <section className="gate-hero">
           <div className="gate-hero-copy">
-            <p className="gate-kicker"><span /> AGENTFORGE HACKATHON WINNER</p>
+            <p className="gate-kicker"><span /> AGENTROGUE HACKATHON 2026 WINNER</p>
             <h1>Agents move fast.<br /><em>Gatekit decides faster.</em></h1>
             <p className="gate-hero-description">
               A control layer between AI agents and real-world actions. Every call is

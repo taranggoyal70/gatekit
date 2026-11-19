@@ -64,7 +64,7 @@ export function AuthExperience({ mode }: { mode: "sign-in" | "sign-up" }) {
           </div>
         </div>
 
-        <p className="gate-auth-footnote">AgentForge Hackathon winner · Policy-first by design</p>
+        <p className="gate-auth-footnote">AgentRogue Hackathon 2026 winner · Policy-first by design</p>
       </section>
 
       <section className="gate-auth-form-panel" aria-label={isSignUp ? "Create your Gatekit account" : "Sign in to Gatekit"}>

@@ -4,6 +4,8 @@
 
 **Allow, deny or hold every AI agent action before it runs, with a record nobody can quietly rewrite.**
 
+Winner, AgentRogue Hackathon 2026
+
 [Demo](https://gatekit.vercel.app) · [Docs](https://gatekit.vercel.app/docs) · [Measured results](#measured-results) · [How it works](#how-it-works) · [Quick start](#quick-start)
 
 [![CI](https://github.com/taranggoyal70/gatekit/actions/workflows/ci.yml/badge.svg)](https://github.com/taranggoyal70/gatekit/actions/workflows/ci.yml)
