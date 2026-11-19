@@ -15,7 +15,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx src/db/migrate.ts"
+    "db:migrate": "tsx src/db/migrate.ts",
+    "eval": "tsx --conditions=react-server eval/run.ts",
+    "eval:check": "tsx --conditions=react-server eval/run.ts --check"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.5.20",
