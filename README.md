@@ -151,6 +151,7 @@ Full method: [eval/README.md](eval/README.md).
 ## How it works
 
 ```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 360}}}%%
 flowchart TB
   AG["Agent calls guard(action, fn)"] -- "POST /api/v1/evaluate" --> API["Agent key, rate limit,<br/>body validation"]
   API --> ENG["Policy engine<br/>first enabled match by priority"]
