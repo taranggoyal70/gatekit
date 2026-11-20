@@ -35,8 +35,10 @@ Only the `main` branch and the current deployment are supported.
 - JSON bodies are capped on the bytes actually read (20 KB for
   `/api/v1/evaluate`, 64 KB elsewhere), not on `Content-Length`.
 - `/api/v1/evaluate` is rate limited per agent (120 requests a minute). The
-  limiter is in memory, so on several server instances each instance counts
-  separately; see "Known limits".
+  count lives in Postgres and is updated in one atomic statement, so every
+  server instance shares it.
+- Creating, changing and deleting policies requires the `admin` or `owner`
+  role, enforced in the API routes. Members can read policies.
 - The Slack webhook field only accepts `https://hooks.slack.com/services/…`,
   so it cannot be used to make the server request arbitrary URLs.
 
@@ -57,11 +59,17 @@ What protects it:
    mutable `actions` table against the chain, so an edited decision or status
    there is reported.
 3. **Checkpoints.** The verify response includes the chain head
-   (`headSeq`, `headHash`). Store it somewhere Gatekit's database cannot reach
-   (a ticket, a log pipeline, a signed commit) and pass it back as
-   `checkpointSeq` / `checkpointHash`; verification then also catches the
-   newest events being dropped, or the chain being rewritten and fully
-   re-hashed after that point.
+   (`headSeq`, `headHash`). When the chain verifies and
+   `GATEKIT_CHECKPOINT_SIGNING_KEY` is set, it also returns `signedCheckpoint`:
+   the organization, sequence number and hash, signed with Ed25519
+   ([`src/lib/checkpoint-signing.ts`](src/lib/checkpoint-signing.ts)). The
+   public key is served at `GET /api/audit/public-key`, and
+   `pnpm audit:verify-checkpoint` checks a checkpoint offline. Store
+   checkpoints somewhere Gatekit's database cannot reach and pass `seq` and
+   `hash` back as `checkpointSeq` / `checkpointHash`; verification then also
+   catches the newest events being dropped, or the chain being rewritten and
+   fully re-hashed after that point. The signature means a checkpoint cannot
+   be fabricated later by someone who only controls the database.
 
 The [eval](eval/README.md) runs twelve tampering scenarios against these
 guarantees on every CI run.
@@ -73,8 +81,12 @@ guarantees on every CI run.
   without detection unless they also rewrite every later hash, and they
   cannot do that past a checkpoint you stored elsewhere. Without a stored
   checkpoint, dropping the newest events is not detectable from the database
-  alone. Signing checkpoints with a key held outside the database (for
-  example a KMS key) is the planned next step.
+  alone.
+- **The signing key is an environment variable.** Whoever can read the
+  deployment's environment can sign checkpoints. Keep it out of the database
+  and out of preview environments, and rotate it if exposed; every checkpoint
+  carries the key id that signed it. A managed KMS or hardware key would
+  remove this exposure.
 - **Risk levels come from the agent.** Policies can match on risk, and Gatekit
   trusts the agent's label. An agent that under-reports risk can get an action
   allowed that a higher label would have held. Write deny and hold rules on
@@ -84,11 +96,11 @@ guarantees on every CI run.
   calls it, or one that calls it and then ignores a `deny`. Give agents the
   credentials for real systems only through code paths that go through
   `guard()`.
-- **The rate limiter is per instance.** Multiple server instances multiply the
-  effective limit. A shared store is needed before relying on it for abuse
-  protection at scale.
-- **Any organization member can edit policies** today; role gating for policy
-  changes is not yet enforced. Policy changes are recorded in the audit chain
-  with the acting user.
+- **The rate limit is a fixed window.** An agent can make up to twice the
+  limit across a window boundary. It limits runaway agents; it is not a
+  defence against a distributed attack.
+- **Email needs a verified sender.** Approval and invite email is sent only
+  when both `RESEND_API_KEY` and `GATEKIT_NOTIFICATION_FROM` are set; there is
+  no built-in default sender.
 - **Secrets at rest.** The Slack webhook URL is stored in Postgres in plain
   text, as are Stripe customer ids. Protect database access accordingly.

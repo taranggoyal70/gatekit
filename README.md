@@ -9,7 +9,7 @@ Winner, AgentRogue Hackathon 2026
 [Demo](https://gatekit.vercel.app) · [Docs](https://gatekit.vercel.app/docs) · [Measured results](#measured-results) · [How it works](#how-it-works) · [Quick start](#quick-start)
 
 [![CI](https://github.com/taranggoyal70/gatekit/actions/workflows/ci.yml/badge.svg)](https://github.com/taranggoyal70/gatekit/actions/workflows/ci.yml)
-[![Tests: 179](https://img.shields.io/badge/tests-179%20passing-2ea44f)](#verify-a-checkout)
+[![Tests: 197](https://img.shields.io/badge/tests-197%20passing-2ea44f)](#verify-a-checkout)
 [![Held-out eval: 103 of 120](https://img.shields.io/badge/held--out%20eval-103%2F120%20correct%2C%200%20false%20blocks-informational)](eval/RESULTS.md)
 [![Audit tamper suite: 12 of 12](https://img.shields.io/badge/audit%20tamper%20suite-12%2F12-informational)](eval/RESULTS.md#audit-tamper-suite)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
@@ -50,18 +50,34 @@ compliance reviewer can check.
     <td><img src="assets/readme/docs-rest.jpg" alt="Gatekit documentation page: the policy rules section explaining priority order, wildcard patterns and the default hold for high and critical risk, followed by a curl example posting an email.send action to https://gatekit.vercel.app/api/v1/evaluate with a bearer agent key."></td>
   </tr>
   <tr>
-    <td><b>Docs quick start.</b> Every example sets <code>baseUrl</code> to the real host, and the install section says plainly that the SDK is not on npm yet.</td>
-    <td><b>Docs, rules and REST.</b> The SDK is a thin wrapper over one HTTP endpoint, so any language can call it.</td>
+    <td><b>Docs quick start.</b> One client, one <code>guard()</code> call, and what each of the three outcomes does to your function.</td>
+    <td><b>Docs, policy rules.</b> Priority order, glob patterns, the default for unmatched actions, and who may edit rules.</td>
+  </tr>
+  <tr>
+    <td><img src="assets/readme/console-overview.jpg" alt="Gatekit console overview for the demo organization Kestrel Supply Co.: 4 registered agents, 8 pending approvals, 60 actions recorded, a banner reading '8 actions waiting on you', and recent activity mixing Allow, Pending and Deny decisions such as crm.export on segment:enterprise denied."></td>
+    <td><img src="assets/readme/console-approvals.jpg" alt="Gatekit approvals queue: held actions claims.open (low risk), cert.rotate (medium risk) and infra.scale on prod/db-replicas (high risk), each with its agent-supplied context, an optional reason field, Approve and Deny buttons, and an expiry time 24 hours out."></td>
+  </tr>
+  <tr>
+    <td><b>Console overview.</b> Counts are live queries; recent activity shows each action's decision or approval state.</td>
+    <td><b>Approvals queue.</b> Held actions wait here until a person approves or denies them, or the 24-hour window expires.</td>
+  </tr>
+  <tr>
+    <td><img src="assets/readme/console-policies.jpg" alt="Gatekit policies page: a New policy form with name, priority, action type pattern, target pattern, minimum risk level and decision, above the 56-policy reference pack in priority order, starting with Deny production table drops (db.drop_table on prod.*, priority 10) and Deny direct pushes to main."></td>
+    <td><img src="assets/readme/console-audit.jpg" alt="Gatekit audit log: a green banner reading 'Chain verified: 130 events, 60 actions cross-checked' with the head hash and 'signed, key d980fa03df4b5d1d', a Copy signed checkpoint button, status filters, and the action list with risk, decision and time."></td>
+  </tr>
+  <tr>
+    <td><b>Policies.</b> The eval's 56-policy reference pack, evaluated top to bottom. Only admins and owners see the form and the delete buttons.</td>
+    <td><b>Audit log.</b> Verification recomputes all 130 hashes, cross-checks the actions table, and returns an Ed25519-signed checkpoint.</td>
   </tr>
 </table>
 
-<sub>Captured from a local production build of this branch on 2026-11-19; see <a href="assets/readme/README.md">assets/readme</a> for provenance. Dashboard screenshots (policies, approvals queue, audit log) need a signed-in organization and are not included yet.</sub>
+<sub>Captured on 2026-11-19 from local builds of this branch, not the live deployment. The console shots are a local demo organization seeded with the eval's reference policy pack and its 60 dev cases, sent through the real record path; 14 of the 22 holds were then decided by hand. See <a href="assets/readme/README.md">assets/readme</a> for provenance.</sub>
 
 ## Measured results
 
 Every number below comes from `pnpm eval`, which runs offline (no database
 server, keys or network) and is re-checked in CI on every push. Full tables,
-the confusion matrix and all 17 misses: [eval/RESULTS.md](eval/RESULTS.md).
+the confusion matrix and every miss: [eval/RESULTS.md](eval/RESULTS.md).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/readme/results-dark.svg">
@@ -71,15 +87,23 @@ the confusion matrix and all 17 misses: [eval/RESULTS.md](eval/RESULTS.md).
 **Decisions, on 120 held-out cases** (written by a separate author who saw only
 the rulebook; [method below](#how-the-cases-were-made)):
 
-| Metric | Result |
-| :--- | :--- |
-| Correct decisions | 103 / 120 (85.8%) |
-| **Unsafe allows** (should be denied or held, was allowed) | **14 / 59 (23.7%)**, all in edge cases; 0 / 30 on ordinary cases |
-| False blocks (safe action denied) | 0 / 61 (0.0%) |
-| Unnecessary holds (safe action sent to a human) | 1 / 61 (1.6%) |
-| `allow` precision / recall | 60/74 (81.1%) / 60/61 (98.4%) |
-| `deny` precision / recall | 15/15 (100.0%) / 15/20 (75.0%) |
-| `require_approval` precision / recall | 28/31 (90.3%) / 28/39 (71.8%) |
+| Metric | Held-out, first run | Current engine (post-hoc) |
+| :--- | :--- | :--- |
+| Correct decisions | 103 / 120 (85.8%) | 110 / 120 (91.7%) |
+| **Unsafe allows** (should be denied or held, was allowed) | **14 / 59 (23.7%)**, all in edge cases; 0 / 30 on ordinary cases | **10 / 59 (16.9%)**, all in edge cases; 0 / 30 on ordinary cases |
+| False blocks (safe action denied) | 0 / 61 (0.0%) | 0 / 61 (0.0%) |
+| Unnecessary holds (safe action sent to a human) | 1 / 61 (1.6%) | 0 / 61 (0.0%) |
+| `allow` precision / recall | 60/74 (81.1%) / 60/61 (98.4%) | 61/71 (85.9%) / 61/61 (100.0%) |
+| `deny` precision / recall | 15/15 (100.0%) / 15/20 (75.0%) | 19/19 (100.0%) / 19/20 (95.0%) |
+| `require_approval` precision / recall | 28/31 (90.3%) / 28/39 (71.8%) | 30/30 (100.0%) / 30/39 (76.9%) |
+
+The first-run column is the held-out result, frozen in
+[`eval/results/heldout-ecee479.json`](eval/results/heldout-ecee479.json).
+After that run, pattern matching was made case-insensitive in response to
+seven of its misses. The second column scores the same 120 cases with the
+current engine; because the change was chosen after seeing them, it shows
+what the change fixed, not an independent estimate
+([details](eval/README.md#changes-after-the-held-out-run)).
 
 **Audit integrity and the production path:**
 
@@ -87,29 +111,30 @@ the rulebook; [method below](#how-the-cases-were-made)):
 | :--- | :--- |
 | Tamper scenarios that behaved as designed | 12 / 12: 2 prevented by the database, 8 detected by verification, 2 detected only with a stored checkpoint |
 | Production record path vs. pure engine | 0 of 180 decisions differ |
-| Chain after replay and approvals | verified, 273 events |
+| Chain after replay and approvals | verified, 272 events |
 
 **Added latency** (Apple M3 Pro, Node 24, PGlite in process; no network hop):
 
 | Measurement | n | Median | p95 | p99 |
 | :--- | ---: | ---: | ---: | ---: |
-| Policy engine alone, 56 policies | 36,000 | 1.67 µs | 2.08 µs | 2.46 µs |
-| Full record path, including the audit append | 540 | 3.107 ms | 6.201 ms | 8.767 ms |
-| Verify a whole chain (776 events, 720 actions cross-checked) | 1 | 33.7 ms | | |
+| Policy engine alone, 56 policies | 36,000 | 2.21 µs | 3.08 µs | 3.87 µs |
+| Full record path, including the audit append | 540 | 2.019 ms | 2.774 ms | 3.351 ms |
+| Verify a whole chain (776 events, 720 actions cross-checked) | 1 | 26.2 ms | | |
 
 **What the misses mean.** On ordinary actions the policy pack made no
 mistakes. Every unsafe allow came from one of two edge cases, both of which
 the eval was built to expose:
 
-- **The agent under-reports risk** (8 of 10 got through). Policies can key on
-  the agent's `riskLevel`, and Gatekit trusts it. A $7,000 refund labelled
-  `low` skips a rule that holds `high` refunds.
-- **Targets in an unexpected format** (6 of 12 got through). Matching is
-  case-sensitive and literal, so `Prod.orders` does not match `prod.*`.
-
-Both are properties of the engine and this policy pack, reported as found;
-neither was patched after the held-out run. Writing deny and hold rules on
-action type and target rather than risk avoids the first.
+- **The agent under-reports risk** (8 of 10 got through, before and after the
+  change). Policies can key on the agent's `riskLevel`, and Gatekit trusts it.
+  A $7,000 refund labelled `low` skips a rule that holds `high` refunds.
+  Writing deny and hold rules on action type and target rather than risk
+  avoids this.
+- **Targets in an unexpected format** (6 of 12 got through on the first run,
+  2 of 12 now). Matching was case-sensitive, so `Prod.orders` did not match
+  `prod.*`; it now does. The two left are names a glob cannot connect:
+  `production.sessions` against `prod.*`, and `billing@production` against
+  `*@prod`.
 
 ### How the cases were made
 
@@ -126,8 +151,9 @@ action type and target rather than risk avoids the first.
    formats, unknown actions, rule boundaries). It never saw the pack, the dev
    cases or the code.
 5. Labels were audited against the brief before scoring; none changed. The
-   split was committed (`ecee479`) before the first run, and neither the pack
-   nor the engine has changed since.
+   split was committed (`ecee479`) before the first run, and that run's
+   results are kept unchanged. The pack has not changed since; the one later
+   engine change is reported separately, as post-hoc.
 
 <details>
 <summary>Caveats</summary>
@@ -166,16 +192,17 @@ flowchart TB
   Q -- approved --> RUN
   Q -- "denied or expired" --> STOP
   Q -. "decision appended" .-> CHAIN
-  VER["Audit log page<br/>GET /api/audit/verify"] -. "recompute hashes,<br/>cross-check actions" .-> CHAIN
+  VER["Audit log page<br/>GET /api/audit/verify<br/>returns a signed checkpoint"] -. "recompute hashes,<br/>cross-check actions" .-> CHAIN
 ```
 
 1. The agent calls `guard({ actionType, target, riskLevel }, fn)`. The SDK
    posts the action to `/api/v1/evaluate` with the agent's key.
 2. Gatekit authenticates the key (stored only as a SHA-256 hash), applies the
-   per-agent rate limit, and validates the body.
+   per-agent rate limit (counted in Postgres, so every server instance shares
+   it), and validates the body.
 3. The engine walks the organization's enabled policies in priority order.
    The first whose action-type pattern, target pattern and minimum risk all
-   match decides. If none match, `high` and `critical` actions are held and
+   match decides; patterns ignore case. If none match, `high` and `critical` actions are held and
    the rest are allowed.
 4. In one transaction Gatekit writes the action, an approval request if the
    action is held (24-hour window), and an `action.evaluated` audit event that
@@ -184,16 +211,18 @@ flowchart TB
    `guard()` runs `fn` on allow, throws on deny, or polls until a human
    decides.
 6. Approvals, expiries and policy edits append their own events. Anyone in the
-   organization can re-verify the chain from the Audit log page or the API.
+   organization can re-verify the chain from the Audit log page or the API,
+   and get back a checkpoint signed with a key the database never holds.
 
 ## Engineering decisions
 
 | Constraint | Approach | Tradeoff |
 | :--- | :--- | :--- |
-| Whoever runs Gatekit owns the database and could edit any row. | Per-organization hash chain: `hash = SHA-256(prevHash + "\n" + canonical JSON)`, appended in the same transaction as the change. A trigger rejects `UPDATE` and direct `DELETE`. Verification recomputes every hash, checks sequence continuity, and cross-checks the mutable `actions` table against the chain. The response includes the chain head as a checkpoint to store elsewhere. | Appends for one organization are serialized by an advisory lock. Dropping the newest events is only detectable against a stored checkpoint, and checkpoints are not signed yet. |
-| Policy patterns are user-written and matched against agent-supplied strings on every call. | A linear-time two-pointer glob matcher with single-star backtracking. The previous version compiled globs to regular expressions and took 39 s on `*a*a*a*a*a*b` against 120 characters. | Only `*` is supported, and matching is case-sensitive. The eval shows what that costs on oddly formatted targets. |
+| Whoever runs Gatekit owns the database and could edit any row. | Per-organization hash chain: `hash = SHA-256(prevHash + "\n" + canonical JSON)`, appended in the same transaction as the change. A trigger rejects `UPDATE` and direct `DELETE`. Verification recomputes every hash, checks sequence continuity, and cross-checks the mutable `actions` table against the chain. When the chain verifies, the response includes its head as an Ed25519-signed checkpoint to store elsewhere; the public key is published at `/api/audit/public-key`. | Appends for one organization are serialized by an advisory lock. Dropping the newest events is only detectable against a stored checkpoint. The signing key lives in an environment variable, not a hardware or managed KMS. |
+| Policy patterns are user-written and matched against agent-supplied strings on every call. | A linear-time two-pointer glob matcher with single-star backtracking. The previous version compiled globs to regular expressions and took 39 s on `*a*a*a*a*a*b` against 120 characters. | Only `*` is supported. Both sides are lowercased first, so `prod.*` also matches `Prod.orders`; a rule cannot be made case-sensitive. |
 | A reviewer must be able to tell why an action was allowed. | Ascending priority, first enabled match wins, a human-readable reason, and a snapshot of the matched policy in the audit event, so later edits to the policy do not change the record. | Order matters: a broad allow above a narrow deny wins. There is no rule combination. |
 | A new organization has no policies on day one. | With no match, `high` and `critical` actions are held for a human and lower risks are allowed. | It relies on the agent's risk label. The eval measures how often an under-reported label gets through. |
+| Rate limits must hold across every serverless instance. | A fixed window per agent, counted by one atomic `INSERT ... ON CONFLICT DO UPDATE` in Postgres using the database clock. No extra service to run. | One small write per evaluate call. A fixed window allows a burst of up to twice the limit across a window boundary. |
 | Two reviewers can click at the same time, and approvals expire. | The decision is a conditional `UPDATE ... WHERE status = 'pending' AND expires_at > now()`. Exactly one reviewer wins; the other gets `409`. A decision after expiry is refused. | One approver per action; no quorum. |
 | Expiring approvals needs no scheduler. | Past-due approvals are expired, with audit events, at the start of every read and decide path that could observe them. | A stale approval stays `pending` in the table until something reads it; nothing can act on it in that state. |
 | SQL behaviour (constraints, cascades, triggers, transactions) is where bugs hide, and mocks cannot show it. | Integration tests run real migrations on in-process PGlite, so `pnpm test` needs no database. CI also runs them against Postgres 16. | PGlite has one connection, so concurrency is only covered by the Postgres 16 job. |
@@ -224,8 +253,8 @@ pnpm verify
 ```
 
 ```text
- Test Files  20 passed (20)
-      Tests  179 passed (179)
+ Test Files  22 passed (22)
+      Tests  197 passed (197)
 eval:check passed: decisions, metrics and tamper outcomes match eval/results/latest.json.
 README assets match their sources (6 files).
 ```
@@ -258,7 +287,9 @@ All variables are listed with comments in [.env.example](.env.example).
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` | Yes | Dashboard sign-in |
 | `DATABASE_URL` | Yes | Postgres; run `pnpm db:migrate` after setting it |
 | `NEXT_PUBLIC_SITE_URL` | In production | Links in approval email, Slack and billing redirects; the host shown in the docs |
-| `RESEND_API_KEY`, `GATEKIT_NOTIFICATION_FROM` | No | Approval and invite email. Without them approvals still work; nobody is emailed. |
+| `RESEND_API_KEY`, `GATEKIT_NOTIFICATION_FROM` | No | Approval and invite email. Both must be set, and the sender must be on a domain verified in Resend. Without them approvals still work; nobody is emailed. |
+| `GATEKIT_CHECKPOINT_SIGNING_KEY` | No, recommended | Ed25519 private key (PEM, or base64 PKCS8 DER) that signs audit checkpoints. `.env.example` has a one-line `openssl` recipe. Without it, checkpoints are returned unsigned. |
+| `DATABASE_POOL_MAX` | No | Postgres connections per server instance (default 10) |
 | `STRIPE_SECRET_KEY`, `STRIPE_PRO_PRICE_ID`, `STRIPE_WEBHOOK_SECRET` | No | Pro billing. Without them the dashboard shows a contact link and checkout returns `503`. |
 | `TEST_DATABASE_URL` | No | Run integration tests on Postgres instead of PGlite |
 | Slack webhook | No | Not an environment variable: each organization sets it in **Settings > Notifications** |
@@ -279,7 +310,7 @@ import { GatekitClient, GatekitDeniedError } from "@gatekit/sdk";
 
 const gatekit = new GatekitClient({
   apiKey: process.env.GATEKIT_KEY!,
-  baseUrl: "https://gatekit.vercel.app", // always set this; see Status and limits
+  // baseUrl defaults to https://gatekit.vercel.app; set it for a self-hosted deployment.
 });
 
 try {
@@ -309,9 +340,10 @@ Lower-level calls: `evaluate(input)`, `getActionStatus(actionId)` and
 
 | Method and path | Auth | Purpose |
 | :--- | :--- | :--- |
-| `POST /api/v1/evaluate` | Agent key | Decide an action and record it. 120 requests a minute per agent. |
+| `POST /api/v1/evaluate` | Agent key | Decide an action and record it. 120 requests a minute per agent, shared across instances. |
 | `GET /api/v1/actions/{actionId}` | Agent key | Current status of one of your organization's actions |
-| `GET /api/audit/verify` | Dashboard session | Verify the chain; optional `checkpointSeq` and `checkpointHash` |
+| `GET /api/audit/verify` | Dashboard session | Verify the chain; optional `checkpointSeq` and `checkpointHash`. Returns a signed checkpoint when the chain verifies. |
+| `GET /api/audit/public-key` | None | The Ed25519 public key that signs checkpoints, as PEM, with its key id |
 | `GET /api/audit/events` | Dashboard session | Audit events oldest first; `afterSeq`, `limit` (up to 500) |
 | `GET /api/health` | None | Liveness |
 
@@ -339,22 +371,42 @@ curl -X POST https://gatekit.vercel.app/api/v1/evaluate \
 
 Open **Audit log** in the dashboard and press **Verify again**, or call
 `GET /api/audit/verify` with a dashboard session. The response reports
-`ok`, any failures by kind, and the chain head:
+`ok`, any failures by kind, and the chain head. When the chain verifies and a
+signing key is configured, it also returns a signed checkpoint:
 
 ```json
 {
   "ok": true,
   "chain": { "ok": true, "checked": 61, "headSeq": 61, "headHash": "0dd6788c…", "failures": [] },
   "actions": { "checked": 4, "failures": [] },
-  "verifiedAt": "…"
+  "verifiedAt": "…",
+  "signedCheckpoint": {
+    "version": "gatekit-checkpoint-v1",
+    "orgId": "…",
+    "seq": 61,
+    "hash": "0dd6788c…",
+    "signedAt": "…",
+    "algorithm": "Ed25519",
+    "keyId": "d980fa03df4b5d1d",
+    "signature": "…"
+  }
 }
 ```
 
-Store `headSeq` and `headHash` somewhere Gatekit's database cannot reach (a
-ticket, a log pipeline, a signed commit). Passing them back as
-`checkpointSeq` and `checkpointHash` also catches the newest events being
-dropped, or the whole chain being rewritten and re-hashed after that point.
-See [SECURITY.md](SECURITY.md#audit-log-integrity).
+Store the checkpoint somewhere Gatekit's database cannot reach (a ticket, a
+log pipeline, a commit). The signature proves Gatekit issued it, so a
+checkpoint cannot be forged later to match a rewritten chain. Check one
+offline against the published key:
+
+```bash
+curl -s https://gatekit.vercel.app/api/audit/public-key | jq -r .publicKey > gatekit.pem
+pnpm audit:verify-checkpoint checkpoint.json gatekit.pem
+```
+
+Passing `seq` and `hash` back as `checkpointSeq` and `checkpointHash` also
+catches the newest events being dropped, or the whole chain being rewritten
+and re-hashed after that point. See
+[SECURITY.md](SECURITY.md#audit-log-integrity).
 
 ## Verify a checkout
 
@@ -363,7 +415,7 @@ pnpm verify
 ```
 
 This runs, in order: ESLint with zero warnings allowed, `tsc --noEmit`, the
-179 tests (unit and PGlite integration), `pnpm eval:check` (every decision,
+197 tests (unit and PGlite integration), `pnpm eval:check` (every decision,
 metric and tamper outcome must match the committed results), and
 `pnpm readme:assets --check` (the README graphics must match their sources).
 CI runs the same, plus the integration tests against Postgres 16 and a
@@ -374,22 +426,20 @@ production `next build`.
 Gatekit runs at [gatekit.vercel.app](https://gatekit.vercel.app). The live
 deployment predates this README's changes until it is redeployed.
 
-- **The SDK's default host does not resolve.** Without `baseUrl`, the client
-  calls `https://api.gatekit.dev`, which has no DNS record. Always pass
-  `baseUrl`.
-- **The SDK is not on npm.** Build it from `packages/sdk` as shown above.
+- **The SDK is not on npm yet.** The package is ready to publish; until it
+  is, build it from `packages/sdk` as shown above.
 - **Risk levels come from the agent**, and policies that key on risk trust
   them. See the eval's mislabelled-risk results.
-- **Matching is case-sensitive** and supports only `*`.
+- **Patterns support only `*`** and always ignore case.
 - **Gatekit decides; it does not execute.** It cannot stop an agent that never
   calls it or ignores a `deny`. Give agents credentials only through code
   paths that go through `guard()`.
-- **The rate limiter is in memory**, so each server instance counts
-  separately.
-- **Any organization member can edit policies.** Edits are recorded in the
-  audit chain with the acting user, but are not yet role-gated.
-- **Checkpoints are not signed.** Signing them with a key held outside the
-  database is the next step for audit integrity.
+- **Only admins and owners can change policies.** Members can view them.
+  Every change is recorded in the audit chain with the acting user.
+- **The checkpoint signing key is an environment variable.** Anyone who can
+  read the deployment's environment can sign checkpoints. A managed KMS or
+  hardware key would remove that; the key id in every checkpoint makes
+  rotation visible.
 
 Threat model and reporting: [SECURITY.md](SECURITY.md).
 
@@ -403,10 +453,15 @@ src/
   lib/
     policy-engine.ts    pure decision logic and the glob matcher
     audit-chain.ts      canonical JSON, event hashing and chain verification
+    checkpoint-signing.ts  Ed25519 signing and verification of chain checkpoints
+    rate-limit.ts       the shared per-agent limiter
     services/           transactional business logic used by the routes
 packages/sdk/           @gatekit/sdk, the TypeScript client
 eval/                   rulebook, policy pack, dev and held-out cases, runner, results
-scripts/readme-assets.ts  generates the README hero and results graphics
+scripts/
+  readme-assets.ts      generates the README hero and results graphics
+  verify-checkpoint.ts  checks a signed checkpoint offline
+  changelog.ts          generates CHANGELOG.md from git history
 ```
 
 ## Contributing and security

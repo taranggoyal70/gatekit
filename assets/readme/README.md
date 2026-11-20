@@ -8,7 +8,7 @@ Everything the top-level README shows, and where it came from.
 | :--- | :--- |
 | `hero-dark.svg`, `hero-light.svg` (1280x640) | `hero-run.json` |
 | `hero-mobile-dark.svg`, `hero-mobile-light.svg` (640 wide) | `hero-run.json` |
-| `results-dark.svg`, `results-light.svg` | `eval/results/latest.json` (held-out split, by case type) |
+| `results-dark.svg`, `results-light.svg` | `eval/results/heldout-ecee479.json` (the held-out split's first run, by case type) |
 
 All six are written by [`scripts/readme-assets.ts`](../../scripts/readme-assets.ts).
 
@@ -42,15 +42,39 @@ tools' Animations panel.
 
 ## Screenshots
 
-`landing.jpg` (1440x800), `sdk.jpg` (825x458, the landing page's code
-sample), `docs-quickstart.jpg` (1100x500) and `docs-rest.jpg` (1100x500) were
-captured on 2026-11-19 from a local
-production build of this branch (`next build && next start`), not from the
-live deployment, which still runs the previous version. The build used
-`NEXT_PUBLIC_SITE_URL=https://gatekit.vercel.app` so the docs show the real
-host, and inert Clerk keys so public pages render without a sign-in. Headless
-Chrome at device scale 1; crops only, no retouching. Each row of the README
-grid shares one aspect ratio so the table lines up.
+All captured on 2026-11-19 with headless Chromium at device scale 1; crops
+only, no retouching. Each row of the README grid shares one aspect ratio so
+the table lines up.
 
-Dashboard screenshots (policies, approvals, audit log) need a signed-in
-organization and are not included yet.
+### Public pages
+
+`landing.jpg` (1440x800), `sdk.jpg` (825x458, the landing page's code
+sample), `docs-quickstart.jpg` (840x500) and `docs-rest.jpg` (840x500) come
+from a local production build of this branch (`next build && next start`),
+not from the live deployment. The build used
+`NEXT_PUBLIC_SITE_URL=https://gatekit.vercel.app` so the docs show the real
+host, and inert Clerk keys so public pages render without a sign-in.
+
+### Console
+
+`console-overview.jpg`, `console-approvals.jpg`, `console-policies.jpg` and
+`console-audit.jpg` (1440x900 each) come from `next dev` on this branch,
+signed in to a throwaway Clerk development instance, against a local demo
+database built like this:
+
+1. Apply all migrations to an in-process PGlite database and create one
+   organization, "Kestrel Supply Co.", on the Pro plan.
+2. Load the eval's 56-policy reference pack through `createPolicy`.
+3. Create four agents (ops, support, sales, finance) and send the 60 dev cases
+   (`eval/cases/dev.jsonl`), interleaved by expected decision, through the
+   production record path, `evaluateAndRecordAction`.
+4. Decide the oldest 14 of the 22 held actions through `decideApproval`
+   (every fourth one denied) and leave 8 pending.
+5. Serve the database over the Postgres wire protocol and point
+   `DATABASE_URL` at it; a throwaway Ed25519 key was set as
+   `GATEKIT_CHECKPOINT_SIGNING_KEY` so the audit log shows a signed
+   checkpoint.
+
+Every number on screen is a live query against that database. The dev-mode
+Next.js indicator and Clerk's development-instance prompt were hidden with
+CSS before capture; nothing else was changed.
