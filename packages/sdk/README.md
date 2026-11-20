@@ -1,18 +1,21 @@
-# @gatekit/sdk
+# @gatekithq/sdk
 
 TypeScript client for [Gatekit](https://github.com/taranggoyal70/gatekit):
 allow, deny or hold an AI agent's action before it runs, with every decision
 recorded in a tamper-evident audit log.
 
 ```bash
-npm install @gatekit/sdk
+npm install @gatekithq/sdk
 ```
+
+Note the scope: packages under `@gatekit/` on npm belong to an unrelated
+project.
 
 Create an agent key in the Gatekit dashboard under **Agents** (it is shown
 once), then wrap each outbound action:
 
 ```ts
-import { GatekitClient, GatekitDeniedError } from "@gatekit/sdk";
+import { GatekitClient, GatekitDeniedError } from "@gatekithq/sdk";
 
 const gatekit = new GatekitClient({ apiKey: process.env.GATEKIT_KEY! });
 

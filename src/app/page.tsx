@@ -51,7 +51,7 @@ export default function LandingPage() {
           <div className="gate-code">
             <div className="gate-code-bar"><span>refund-agent.ts</span><code>TypeScript</code></div>
             <pre>
-{`import { GatekitClient } from "@gatekit/sdk";
+{`import { GatekitClient } from "@gatekithq/sdk";
 
 const gatekit = new GatekitClient({
   apiKey: process.env.GATEKIT_KEY!,

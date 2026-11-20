@@ -43,7 +43,8 @@ tools' Animations panel.
 ## Screenshots
 
 All captured on 2026-11-19 with headless Chromium at device scale 1; crops
-only, no retouching. Each row of the README grid shares one aspect ratio so
+only, no retouching. `sdk.jpg` and `docs-quickstart.jpg` were recaptured the
+same way on 2026-11-20, after the SDK was renamed to `@gatekithq/sdk`. Each row of the README grid shares one aspect ratio so
 the table lines up.
 
 ### Public pages

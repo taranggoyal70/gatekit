@@ -124,7 +124,7 @@ export function AgentsManager() {
         <div className="h-24 animate-pulse rounded-xl border border-[var(--line)]" />
       ) : agents.length === 0 ? (
         <div className="rounded-xl border border-dashed border-[var(--line)] p-8 text-center text-sm text-[var(--foreground)]/60">
-          No agents yet. Create one and wire the key into your agent via @gatekit/sdk.
+          No agents yet. Create one and wire the key into your agent via @gatekithq/sdk.
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-[var(--line)]">
@@ -153,7 +153,7 @@ export function AgentsManager() {
       <div className="rounded-xl border border-[var(--line)] bg-[var(--surface)]/50 p-4">
         <p className="text-xs font-medium">Quick start</p>
         <pre className="mt-2 overflow-x-auto rounded-lg bg-[var(--background)] p-3 font-mono text-xs leading-5">
-{`import { GatekitClient } from "@gatekit/sdk";
+{`import { GatekitClient } from "@gatekithq/sdk";
 
 const gatekit = new GatekitClient({ apiKey: process.env.GATEKIT_KEY! });
 
