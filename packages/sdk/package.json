@@ -1,5 +1,5 @@
 {
-  "name": "@gatekit/sdk",
+  "name": "@gatekithq/sdk",
   "version": "0.1.0",
   "description": "TypeScript client for Gatekit: policy gates, human approvals and a tamper-evident audit log for AI agent actions.",
   "license": "MIT",

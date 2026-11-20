@@ -49,19 +49,20 @@ export default function DocsPage() {
 
           <Section id="install" title="Install">
             <p>
-              <code>@gatekit/sdk</code> is not on npm yet. Build it from the repository and install
-              the tarball, or call the REST API below from any language.
+              <code>@gatekithq/sdk</code> is not on npm yet. Build it from the repository and install
+              the tarball, or call the REST API below from any language. Packages under{" "}
+              <code>@gatekit/</code> on npm belong to an unrelated project.
             </p>
             <Code label="terminal">{`git clone https://github.com/taranggoyal70/gatekit.git
 cd gatekit && pnpm install
 cd packages/sdk && npx tsc -p . && npm pack
 # in your agent's project:
-npm install /path/to/gatekit/packages/sdk/gatekit-sdk-0.1.0.tgz`}</Code>
+npm install /path/to/gatekit/packages/sdk/gatekithq-sdk-0.1.0.tgz`}</Code>
           </Section>
 
           <Section id="quick-start" title="Quick start">
             <p>Create an agent key under Agents in the console (it is shown once), then wrap the call:</p>
-            <Code label="agent.ts">{`import { GatekitClient } from "@gatekit/sdk";
+            <Code label="agent.ts">{`import { GatekitClient } from "@gatekithq/sdk";
 
 const gatekit = new GatekitClient({
   apiKey: process.env.GATEKIT_KEY!,

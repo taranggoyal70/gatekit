@@ -296,17 +296,19 @@ All variables are listed with comments in [.env.example](.env.example).
 
 ## Use it from an agent
 
-`@gatekit/sdk` (in [`packages/sdk`](packages/sdk)) is not published to npm
-yet. Build it from this repository and install the tarball:
+`@gatekithq/sdk` (in [`packages/sdk`](packages/sdk)) is not published to npm
+yet. Build it from this repository and install the tarball. Packages under
+`@gatekit/` on npm belong to an unrelated project; do not install them for
+this one.
 
 ```bash
 cd packages/sdk && npx tsc -p . && npm pack
 # in your agent's project:
-npm install /path/to/gatekit/packages/sdk/gatekit-sdk-0.1.0.tgz
+npm install /path/to/gatekit/packages/sdk/gatekithq-sdk-0.1.0.tgz
 ```
 
 ```ts
-import { GatekitClient, GatekitDeniedError } from "@gatekit/sdk";
+import { GatekitClient, GatekitDeniedError } from "@gatekithq/sdk";
 
 const gatekit = new GatekitClient({
   apiKey: process.env.GATEKIT_KEY!,
@@ -456,7 +458,7 @@ src/
     checkpoint-signing.ts  Ed25519 signing and verification of chain checkpoints
     rate-limit.ts       the shared per-agent limiter
     services/           transactional business logic used by the routes
-packages/sdk/           @gatekit/sdk, the TypeScript client
+packages/sdk/           @gatekithq/sdk, the TypeScript client
 eval/                   rulebook, policy pack, dev and held-out cases, runner, results
 scripts/
   readme-assets.ts      generates the README hero and results graphics
