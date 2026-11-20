@@ -63,6 +63,12 @@ export type EvaluationResult = {
  * other character is literal, so a policy like "billing.charge" never
  * matches "billingXcharge". The whole value must match.
  *
+ * Matching ignores case. Agents do not normalize what they send: the eval's
+ * held-out split found `Prod.orders`, `API@PROD` and `KESTREL/API:MAIN`
+ * slipping past rules written as `prod.*`, `*@prod` and `kestrel/api:*`.
+ * Email addresses, hostnames and unquoted Postgres identifiers are
+ * case-insensitive anyway, so a governance rule should be too.
+ *
  * This is a greedy two-pointer matcher with single-star backtracking, which
  * runs in O(pattern × value) worst case and needs no allocation. An earlier
  * version compiled patterns to `^…$` regexes with `.*`; V8 backtracks those
@@ -70,7 +76,9 @@ export type EvaluationResult = {
  * loop for about 39 seconds on a 120-character target. Policy patterns are
  * authored by any org member, so matching must stay linear-ish on any input.
  */
-export function globMatch(pattern: string, value: string): boolean {
+export function globMatch(rawPattern: string, rawValue: string): boolean {
+  const pattern = rawPattern.toLowerCase();
+  const value = rawValue.toLowerCase();
   let p = 0;
   let v = 0;
   let starP = -1;

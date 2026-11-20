@@ -35,6 +35,9 @@ const ROOT = path.resolve(__dirname, "..");
 const EVAL = path.join(ROOT, "eval");
 const RESULTS_JSON = path.join(EVAL, "results", "latest.json");
 const RESULTS_MD = path.join(EVAL, "RESULTS.md");
+// The first scoring of the held-out split, kept verbatim. Any engine or pack
+// change after it makes later test-split numbers post-hoc, so both are shown.
+const HELDOUT_JSON = path.join(EVAL, "results", "heldout-ecee479.json");
 const DECISIONS: Decision[] = ["allow", "deny", "require_approval"];
 
 type Case = {
@@ -650,16 +653,24 @@ function renderMarkdown(results: Results) {
     `Generated ${results.generatedAt} at commit \`${results.commit ?? "unknown"}\`. Method and case provenance: [eval/README.md](README.md).`,
     "",
   );
+  const heldout = JSON.parse(readFileSync(HELDOUT_JSON, "utf8")) as Results;
+  const firstRun = heldout.deterministic.classification.test;
+  const testChanged = JSON.stringify(firstRun) !== JSON.stringify(classification.test);
+  const row = (label: string, c: ReturnType<typeof score>) =>
+    `| ${label} | ${c.cases} | ${c.correct} (${fmt(c.accuracy)}) | ${c.unsafeAllow.count}/${c.unsafeAllow.of} (${fmt(c.unsafeAllow.rate)}) | ${c.falseBlock.count}/${c.falseBlock.of} (${fmt(c.falseBlock.rate)}) | ${c.unnecessaryHold.count}/${c.unnecessaryHold.of} (${fmt(c.unnecessaryHold.rate)}) |`;
   lines.push("## Decisions", "");
   lines.push("| Split | Cases | Correct | Unsafe allows | False blocks | Unnecessary holds |");
   lines.push("| :--- | ---: | ---: | ---: | ---: | ---: |");
-  for (const split of ["dev", "test"] as const) {
-    const c = classification[split];
+  lines.push(row("dev (policy pack tuned here)", classification.dev));
+  lines.push(row(`**held-out test, first run** (commit \`${heldout.commit}\`)`, firstRun));
+  if (testChanged) lines.push(row("test, current engine (post-hoc, not held-out)", classification.test));
+  lines.push("");
+  if (testChanged) {
     lines.push(
-      `| ${split === "test" ? "**held-out test**" : "dev (policy pack tuned here)"} | ${c.cases} | ${c.correct} (${fmt(c.accuracy)}) | ${c.unsafeAllow.count}/${c.unsafeAllow.of} (${fmt(c.unsafeAllow.rate)}) | ${c.falseBlock.count}/${c.falseBlock.of} (${fmt(c.falseBlock.rate)}) | ${c.unnecessaryHold.count}/${c.unnecessaryHold.of} (${fmt(c.unnecessaryHold.rate)}) |`,
+      "The engine changed after the held-out split was first scored, in response to its misses (see [eval/README.md](README.md#changes-after-the-held-out-run)). The first-run row is the held-out result; the current-engine row shows the effect of the change on the same cases and is not an independent estimate.",
+      "",
     );
   }
-  lines.push("");
   for (const split of ["dev", "test"] as const) {
     const c = classification[split];
     lines.push(`### Per decision, ${split}`, "");

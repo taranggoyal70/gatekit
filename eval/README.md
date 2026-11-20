@@ -62,8 +62,26 @@ or `require_approval` (needs a human).
      `#announcements-eng`, exactly $500).
 5. The test labels were audited against the brief **before scoring**; none
    were changed. The split was committed (`ecee479`) before the first run.
-6. Neither the pack nor the engine has been changed since. Anything that
-   changes either must be reported as a new, non-held-out result.
+6. The first scoring of the held-out split is kept verbatim in
+   [`results/heldout-ecee479.json`](results/heldout-ecee479.json). Anything
+   that changes the pack or the engine afterwards is reported as a new,
+   post-hoc result next to it, never in its place.
+
+## Changes after the held-out run
+
+| Date | Change | Why | Test split, first run → now |
+| :--- | :--- | :--- | :--- |
+| 2026-11-19 | Pattern matching ignores case (`src/lib/policy-engine.ts`). The pack is unchanged. | Seven held-out misses were targets like `Prod.orders`, `API@PROD` and `KESTREL/API:MAIN` that a human reads as matching the rule. | Correct 103 → 110 of 120; unsafe allows 14 → 10 of 59; false blocks 0 → 0 of 61; unnecessary holds 1 → 0 of 61. |
+
+The "now" numbers are post-hoc: the change was chosen after seeing the
+held-out misses, so they show what the change fixes on these cases, not how
+the engine would do on new ones. A fresh held-out split, written the same way,
+is the only way to get an independent number again.
+
+What remains after the change: 8 of the 10 unsafe allows are agents
+under-reporting risk on rules that key on risk, and 2 are names a glob cannot
+connect (`production.sessions` against a `prod.*` rule, `billing@production`
+against `*@prod`).
 
 ## How to read the results
 
@@ -96,6 +114,7 @@ policies/reference.json the 56-policy pack, frozen at ecdc23c
 cases/dev.jsonl         60 cases the pack was tuned on
 cases/test.jsonl        120 held-out cases from a separate author
 run.ts                  the runner
-results/latest.json     full results, including every miss (generated)
+results/latest.json     full results for the current engine, including every miss (generated)
+results/heldout-ecee479.json  the first held-out scoring, kept verbatim
 RESULTS.md              the same, as tables (generated)
 ```

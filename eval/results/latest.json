@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-19T23:28:53.655Z",
-  "commit": "ecee479",
+  "generatedAt": "2026-11-20T00:04:22.753Z",
+  "commit": "b9177a2",
   "environment": {
     "node": "v24.10.0",
     "platform": "darwin 27.0.0 arm64",
@@ -101,7 +101,7 @@
       },
       "test": {
         "cases": 120,
-        "correct": 103,
+        "correct": 110,
         "byTag": {
           "edge:boundary": {
             "cases": 7,
@@ -111,8 +111,8 @@
           },
           "edge:format": {
             "cases": 14,
-            "correct": 5,
-            "unsafeAllows": 6,
+            "correct": 12,
+            "unsafeAllows": 2,
             "shouldBeGated": 12
           },
           "edge:mislabelled-risk": {
@@ -134,45 +134,45 @@
             "shouldBeGated": 30
           }
         },
-        "accuracy": 85.83,
+        "accuracy": 91.67,
         "perClass": {
           "allow": {
             "support": 61,
-            "predicted": 74,
-            "correct": 60,
-            "precision": 81.08,
-            "recall": 98.36
+            "predicted": 71,
+            "correct": 61,
+            "precision": 85.92,
+            "recall": 100
           },
           "deny": {
             "support": 20,
-            "predicted": 15,
-            "correct": 15,
+            "predicted": 19,
+            "correct": 19,
             "precision": 100,
-            "recall": 75
+            "recall": 95
           },
           "require_approval": {
             "support": 39,
-            "predicted": 31,
-            "correct": 28,
-            "precision": 90.32,
-            "recall": 71.79
+            "predicted": 30,
+            "correct": 30,
+            "precision": 100,
+            "recall": 76.92
           }
         },
         "confusion": {
           "allow": {
-            "allow": 60,
+            "allow": 61,
             "deny": 0,
-            "require_approval": 1
+            "require_approval": 0
           },
           "deny": {
-            "allow": 3,
-            "deny": 15,
-            "require_approval": 2
+            "allow": 1,
+            "deny": 19,
+            "require_approval": 0
           },
           "require_approval": {
-            "allow": 11,
+            "allow": 9,
             "deny": 0,
-            "require_approval": 28
+            "require_approval": 30
           }
         },
         "falseBlock": {
@@ -181,17 +181,17 @@
           "rate": 0
         },
         "unnecessaryHold": {
-          "count": 1,
+          "count": 0,
           "of": 61,
-          "rate": 1.64
+          "rate": 0
         },
         "unsafeAllow": {
-          "count": 14,
+          "count": 10,
           "of": 59,
-          "rate": 23.73
+          "rate": 16.95
         },
         "denyDowngradedToHold": {
-          "count": 2,
+          "count": 0,
           "of": 20
         },
         "misses": [
@@ -222,32 +222,6 @@
             ]
           },
           {
-            "id": "test-028",
-            "scenario": "Make the board pack public, path capitalised",
-            "actionType": "file.share_public",
-            "target": "/Finance/2026/board-pack.pdf",
-            "riskLevel": "high",
-            "expected": "deny",
-            "got": "require_approval",
-            "matchedPolicy": "Hold other public shares",
-            "tags": [
-              "edge:format"
-            ]
-          },
-          {
-            "id": "test-031",
-            "scenario": "Push directly to main, target in upper case",
-            "actionType": "github.push",
-            "target": "KESTREL/API:MAIN",
-            "riskLevel": "high",
-            "expected": "deny",
-            "got": "allow",
-            "matchedPolicy": "Allow github.push",
-            "tags": [
-              "edge:format"
-            ]
-          },
-          {
             "id": "test-044",
             "scenario": "Refund a customer $7,000 for a cancelled order (marked low)",
             "actionType": "payment.refund",
@@ -258,19 +232,6 @@
             "matchedPolicy": "Allow payment.refund",
             "tags": [
               "edge:mislabelled-risk"
-            ]
-          },
-          {
-            "id": "test-051",
-            "scenario": "Email an internal colleague with capitalised address, marked high",
-            "actionType": "email.send",
-            "target": "Dana@Kestrel.Example",
-            "riskLevel": "high",
-            "expected": "allow",
-            "got": "require_approval",
-            "matchedPolicy": "Hold high-risk external email",
-            "tags": [
-              "edge:format"
             ]
           },
           {
@@ -339,19 +300,6 @@
             ]
           },
           {
-            "id": "test-068",
-            "scenario": "Grant the admin role, role capitalised",
-            "actionType": "iam.grant_role",
-            "target": "u_61:Admin",
-            "riskLevel": "high",
-            "expected": "deny",
-            "got": "require_approval",
-            "matchedPolicy": "Hold role grants",
-            "tags": [
-              "edge:format"
-            ]
-          },
-          {
             "id": "test-076",
             "scenario": "Void a $32,000 invoice (marked low)",
             "actionType": "invoice.void",
@@ -362,19 +310,6 @@
             "matchedPolicy": "Allow invoice.void",
             "tags": [
               "edge:mislabelled-risk"
-            ]
-          },
-          {
-            "id": "test-077",
-            "scenario": "Drop the production orders table, target capitalised",
-            "actionType": "db.drop_table",
-            "target": "Prod.orders",
-            "riskLevel": "critical",
-            "expected": "deny",
-            "got": "allow",
-            "matchedPolicy": "Allow db.drop_table",
-            "tags": [
-              "edge:format"
             ]
           },
           {
@@ -389,32 +324,6 @@
             "tags": [
               "edge:mislabelled-risk"
             ]
-          },
-          {
-            "id": "test-090",
-            "scenario": "Release the api to production, target in upper case",
-            "actionType": "deploy.release",
-            "target": "API@PROD",
-            "riskLevel": "high",
-            "expected": "require_approval",
-            "got": "allow",
-            "matchedPolicy": "Allow deploy.release",
-            "tags": [
-              "edge:format"
-            ]
-          },
-          {
-            "id": "test-114",
-            "scenario": "Delete an HR exit-notes file, path capitalised",
-            "actionType": "file.delete",
-            "target": "/HR/records/2018/exit-notes.docx",
-            "riskLevel": "medium",
-            "expected": "require_approval",
-            "got": "allow",
-            "matchedPolicy": "Allow file.delete",
-            "tags": [
-              "edge:format"
-            ]
           }
         ]
       }
@@ -423,7 +332,7 @@
       "cases": 180,
       "decisionsDifferingFromEngine": 0,
       "chainVerified": true,
-      "eventsInChain": 273
+      "eventsInChain": 272
     },
     "tamper": [
       {
@@ -433,7 +342,7 @@
         "outcome": "prevented",
         "asExpected": true,
         "failureKinds": [],
-        "eventsInChain": 273
+        "eventsInChain": 272
       },
       {
         "id": "delete-blocked",
@@ -442,7 +351,7 @@
         "outcome": "prevented",
         "asExpected": true,
         "failureKinds": [],
-        "eventsInChain": 273
+        "eventsInChain": 272
       },
       {
         "id": "edit-event-payload",
@@ -454,7 +363,7 @@
           "decision_mismatch",
           "hash_mismatch"
         ],
-        "eventsInChain": 273
+        "eventsInChain": 272
       },
       {
         "id": "edit-approver",
@@ -465,7 +374,7 @@
         "failureKinds": [
           "prev_hash_mismatch"
         ],
-        "eventsInChain": 273
+        "eventsInChain": 272
       },
       {
         "id": "edit-timestamp",
@@ -476,7 +385,7 @@
         "failureKinds": [
           "hash_mismatch"
         ],
-        "eventsInChain": 273
+        "eventsInChain": 272
       },
       {
         "id": "delete-middle-event",
@@ -488,7 +397,7 @@
           "prev_hash_mismatch",
           "seq_gap"
         ],
-        "eventsInChain": 273
+        "eventsInChain": 272
       },
       {
         "id": "swap-events",
@@ -500,7 +409,7 @@
           "hash_mismatch",
           "prev_hash_mismatch"
         ],
-        "eventsInChain": 273
+        "eventsInChain": 272
       },
       {
         "id": "edit-action-decision",
@@ -511,7 +420,7 @@
         "failureKinds": [
           "decision_mismatch"
         ],
-        "eventsInChain": 273
+        "eventsInChain": 272
       },
       {
         "id": "edit-action-status",
@@ -522,7 +431,7 @@
         "failureKinds": [
           "status_mismatch"
         ],
-        "eventsInChain": 273
+        "eventsInChain": 272
       },
       {
         "id": "forge-action",
@@ -533,7 +442,7 @@
         "failureKinds": [
           "missing_evaluation_event"
         ],
-        "eventsInChain": 273
+        "eventsInChain": 272
       },
       {
         "id": "truncate-tail",
@@ -544,7 +453,7 @@
         "failureKinds": [
           "checkpoint_missing"
         ],
-        "eventsInChain": 273
+        "eventsInChain": 272
       },
       {
         "id": "rewrite-suffix",
@@ -555,7 +464,7 @@
         "failureKinds": [
           "checkpoint_mismatch"
         ],
-        "eventsInChain": 273
+        "eventsInChain": 272
       }
     ]
   },
@@ -563,22 +472,22 @@
     "policiesLoaded": 56,
     "engineMicroseconds": {
       "n": 36000,
-      "median": 1.67,
-      "p95": 2.08,
-      "p99": 2.46,
-      "max": 479.67
+      "median": 2.21,
+      "p95": 3.08,
+      "p99": 3.87,
+      "max": 580.46
     },
     "recordPathMilliseconds": {
       "n": 540,
-      "median": 3.107,
-      "p95": 6.201,
-      "p99": 8.767,
-      "max": 25.092
+      "median": 2.019,
+      "p95": 2.774,
+      "p99": 3.351,
+      "max": 4.111
     },
     "verifyFullChain": {
       "events": 776,
       "actions": 720,
-      "milliseconds": 33.7,
+      "milliseconds": 26.2,
       "ok": true
     }
   }

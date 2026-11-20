@@ -10,7 +10,7 @@
  * through the production record path, one held action is approved, and the
  * chain is verified. Every decision, policy name, sequence number and hash in
  * the picture is copied from that run. Without --capture nothing executes:
- * the SVGs are a pure function of hero-run.json and eval/results/latest.json.
+ * the SVGs are a pure function of hero-run.json and eval/results/heldout-ecee479.json.
  *
  * SVGs are served to GitHub readers as images: CSS animation runs, scripts
  * and web fonts do not. Each element's resting style is its final frame and
@@ -23,7 +23,8 @@ import path from "node:path";
 const ROOT = path.resolve(__dirname, "..");
 const ASSETS = path.join(ROOT, "assets", "readme");
 const RUN_FILE = path.join(ASSETS, "hero-run.json");
-const RESULTS_FILE = path.join(ROOT, "eval", "results", "latest.json");
+// The chart shows the first, genuinely held-out scoring; later engine changes are post-hoc.
+const RESULTS_FILE = path.join(ROOT, "eval", "results", "heldout-ecee479.json");
 
 // ---------------------------------------------------------------- data
 
@@ -523,7 +524,7 @@ function resultsChart(theme: Theme) {
       `<text x="${x + 10}" y="${y + 25}" font-family="${MONO}" font-size="14" fill="${theme.muted}">${t.correct}/${t.cases} correct · ${t.unsafeAllows}/${t.shouldBeGated} let through</text>`,
     );
   });
-  out.push(`<text x="40" y="${H - 24}" font-family="${SANS}" font-size="12" fill="${theme.faint}">Source: eval/results/latest.json (120 held-out cases written from the governance brief by a separate author; policy pack frozen first).</text>`);
+  out.push(`<text x="40" y="${H - 24}" font-family="${SANS}" font-size="12" fill="${theme.faint}">Source: eval/results/heldout-ecee479.json, the first scoring of 120 held-out cases written from the governance brief by a separate author; policy pack frozen first.</text>`);
   const desc = `Bar chart of held-out eval results by case type. ${rows
     .map(([key, label]) => {
       const t = test.byTag[key]!;
