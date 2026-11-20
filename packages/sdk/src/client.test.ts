@@ -43,7 +43,8 @@ describe("GatekitClient.evaluate", () => {
     expect(result.decision).toBe("allow");
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const call = fetchMock.mock.calls[0];
-    expect(call?.[0]).toContain("/api/v1/evaluate");
+    // With no baseUrl the client calls the hosted Gatekit, a host that resolves.
+    expect(call?.[0]).toBe("https://gatekit.vercel.app/api/v1/evaluate");
     const init = call?.[1] as RequestInit & { headers: Record<string, string> };
     expect(init.headers.Authorization).toBe("Bearer gk_test");
   });

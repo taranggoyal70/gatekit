@@ -1,8 +1,21 @@
 {
   "name": "@gatekit/sdk",
   "version": "0.1.0",
-  "description": "Official TypeScript SDK for Gatekit — the governance and audit layer for AI agents.",
+  "description": "TypeScript client for Gatekit: policy gates, human approvals and a tamper-evident audit log for AI agent actions.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taranggoyal70/gatekit.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://github.com/taranggoyal70/gatekit#readme",
+  "keywords": [
+    "ai-agents",
+    "governance",
+    "approvals",
+    "audit-log",
+    "policy"
+  ],
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -12,9 +25,19 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "tsc -p tsconfig.json"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
     "typescript": "^6.0.3"

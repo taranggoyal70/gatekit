@@ -7,7 +7,8 @@ import type {
   WaitForApprovalOptions,
 } from "./types";
 
-const DEFAULT_BASE_URL = "https://api.gatekit.dev";
+// The hosted Gatekit. Self-hosted deployments pass their own `baseUrl`.
+const DEFAULT_BASE_URL = "https://gatekit.vercel.app";
 const DEFAULT_TIMEOUT_MS = 10 * 60 * 1000;
 const DEFAULT_POLL_INTERVAL_MS = 3_000;
 
