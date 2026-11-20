@@ -1,0 +1,566 @@
+{
+  "name": "kestrel-reference",
+  "description": "Gatekit policies translated from eval/governance-brief.md. Frozen before the held-out split was written.",
+  "policies": [
+    {
+      "name": "Deny production table drops",
+      "actionTypePattern": "db.drop_table",
+      "targetPattern": "prod.*",
+      "minRiskLevel": "low",
+      "decision": "deny",
+      "priority": 10,
+      "enabled": true,
+      "briefRule": 1
+    },
+    {
+      "name": "Deny production row deletes",
+      "actionTypePattern": "db.delete_rows",
+      "targetPattern": "prod.*",
+      "minRiskLevel": "low",
+      "decision": "deny",
+      "priority": 11,
+      "enabled": true,
+      "briefRule": 1
+    },
+    {
+      "name": "Deny production infrastructure deletes",
+      "actionTypePattern": "infra.delete_resource",
+      "targetPattern": "prod/*",
+      "minRiskLevel": "low",
+      "decision": "deny",
+      "priority": 12,
+      "enabled": true,
+      "briefRule": 2
+    },
+    {
+      "name": "Deny direct pushes to main",
+      "actionTypePattern": "github.push",
+      "targetPattern": "*:main",
+      "minRiskLevel": "low",
+      "decision": "deny",
+      "priority": 13,
+      "enabled": true,
+      "briefRule": 3
+    },
+    {
+      "name": "Deny deleting main",
+      "actionTypePattern": "github.delete_branch",
+      "targetPattern": "*:main",
+      "minRiskLevel": "low",
+      "decision": "deny",
+      "priority": 14,
+      "enabled": true,
+      "briefRule": 4
+    },
+    {
+      "name": "Deny deleting release branches",
+      "actionTypePattern": "github.delete_branch",
+      "targetPattern": "*:release-*",
+      "minRiskLevel": "low",
+      "decision": "deny",
+      "priority": 15,
+      "enabled": true,
+      "briefRule": 4
+    },
+    {
+      "name": "Deny public finance files",
+      "actionTypePattern": "file.share_public",
+      "targetPattern": "/finance/*",
+      "minRiskLevel": "low",
+      "decision": "deny",
+      "priority": 16,
+      "enabled": true,
+      "briefRule": 5
+    },
+    {
+      "name": "Deny public HR files",
+      "actionTypePattern": "file.share_public",
+      "targetPattern": "/hr/*",
+      "minRiskLevel": "low",
+      "decision": "deny",
+      "priority": 17,
+      "enabled": true,
+      "briefRule": 5
+    },
+    {
+      "name": "Deny public legal files",
+      "actionTypePattern": "file.share_public",
+      "targetPattern": "/legal/*",
+      "minRiskLevel": "low",
+      "decision": "deny",
+      "priority": 18,
+      "enabled": true,
+      "briefRule": 5
+    },
+    {
+      "name": "Deny admin grants",
+      "actionTypePattern": "iam.grant_role",
+      "targetPattern": "*:admin",
+      "minRiskLevel": "low",
+      "decision": "deny",
+      "priority": 19,
+      "enabled": true,
+      "briefRule": 6
+    },
+    {
+      "name": "Deny owner grants",
+      "actionTypePattern": "iam.grant_role",
+      "targetPattern": "*:owner",
+      "minRiskLevel": "low",
+      "decision": "deny",
+      "priority": 20,
+      "enabled": true,
+      "briefRule": 6
+    },
+    {
+      "name": "Deny CRM exports",
+      "actionTypePattern": "crm.export",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "deny",
+      "priority": 21,
+      "enabled": true,
+      "briefRule": 7
+    },
+    {
+      "name": "Hold every payout",
+      "actionTypePattern": "payment.payout",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "require_approval",
+      "priority": 30,
+      "enabled": true,
+      "briefRule": 8
+    },
+    {
+      "name": "Hold bulk email",
+      "actionTypePattern": "email.send_bulk",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "require_approval",
+      "priority": 31,
+      "enabled": true,
+      "briefRule": 9
+    },
+    {
+      "name": "Hold production releases",
+      "actionTypePattern": "deploy.release",
+      "targetPattern": "*@prod",
+      "minRiskLevel": "low",
+      "decision": "require_approval",
+      "priority": 32,
+      "enabled": true,
+      "briefRule": 10
+    },
+    {
+      "name": "Hold production migrations",
+      "actionTypePattern": "db.migrate",
+      "targetPattern": "prod.*",
+      "minRiskLevel": "low",
+      "decision": "require_approval",
+      "priority": 33,
+      "enabled": true,
+      "briefRule": 11
+    },
+    {
+      "name": "Hold high-risk production writes",
+      "actionTypePattern": "db.write",
+      "targetPattern": "prod.*",
+      "minRiskLevel": "high",
+      "decision": "require_approval",
+      "priority": 34,
+      "enabled": true,
+      "briefRule": 12
+    },
+    {
+      "name": "Hold high-risk refunds",
+      "actionTypePattern": "payment.refund",
+      "targetPattern": "*",
+      "minRiskLevel": "high",
+      "decision": "require_approval",
+      "priority": 35,
+      "enabled": true,
+      "briefRule": 13
+    },
+    {
+      "name": "Hold high-risk charges",
+      "actionTypePattern": "payment.charge",
+      "targetPattern": "*",
+      "minRiskLevel": "high",
+      "decision": "require_approval",
+      "priority": 36,
+      "enabled": true,
+      "briefRule": 13
+    },
+    {
+      "name": "Hold high-risk invoice voids",
+      "actionTypePattern": "invoice.void",
+      "targetPattern": "*",
+      "minRiskLevel": "high",
+      "decision": "require_approval",
+      "priority": 37,
+      "enabled": true,
+      "briefRule": 13
+    },
+    {
+      "name": "Allow internal email",
+      "actionTypePattern": "email.send",
+      "targetPattern": "*@kestrel.example",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 38,
+      "enabled": true,
+      "briefRule": 25
+    },
+    {
+      "name": "Hold high-risk external email",
+      "actionTypePattern": "email.send",
+      "targetPattern": "*",
+      "minRiskLevel": "high",
+      "decision": "require_approval",
+      "priority": 39,
+      "enabled": true,
+      "briefRule": 14
+    },
+    {
+      "name": "Hold role grants",
+      "actionTypePattern": "iam.grant_role",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "require_approval",
+      "priority": 40,
+      "enabled": true,
+      "briefRule": 15
+    },
+    {
+      "name": "Hold user deletes",
+      "actionTypePattern": "user.delete",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "require_approval",
+      "priority": 41,
+      "enabled": true,
+      "briefRule": 16
+    },
+    {
+      "name": "Hold CRM deletes",
+      "actionTypePattern": "crm.delete",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "require_approval",
+      "priority": 42,
+      "enabled": true,
+      "briefRule": 16
+    },
+    {
+      "name": "Hold finance file deletes",
+      "actionTypePattern": "file.delete",
+      "targetPattern": "/finance/*",
+      "minRiskLevel": "low",
+      "decision": "require_approval",
+      "priority": 43,
+      "enabled": true,
+      "briefRule": 17
+    },
+    {
+      "name": "Hold HR file deletes",
+      "actionTypePattern": "file.delete",
+      "targetPattern": "/hr/*",
+      "minRiskLevel": "low",
+      "decision": "require_approval",
+      "priority": 44,
+      "enabled": true,
+      "briefRule": 17
+    },
+    {
+      "name": "Hold legal file deletes",
+      "actionTypePattern": "file.delete",
+      "targetPattern": "/legal/*",
+      "minRiskLevel": "low",
+      "decision": "require_approval",
+      "priority": 45,
+      "enabled": true,
+      "briefRule": 17
+    },
+    {
+      "name": "Hold other public shares",
+      "actionTypePattern": "file.share_public",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "require_approval",
+      "priority": 46,
+      "enabled": true,
+      "briefRule": 18
+    },
+    {
+      "name": "Hold #announcements posts",
+      "actionTypePattern": "slack.post",
+      "targetPattern": "#announcements",
+      "minRiskLevel": "low",
+      "decision": "require_approval",
+      "priority": 47,
+      "enabled": true,
+      "briefRule": 19
+    },
+    {
+      "name": "Hold high-risk production scaling",
+      "actionTypePattern": "infra.scale",
+      "targetPattern": "prod/*",
+      "minRiskLevel": "high",
+      "decision": "require_approval",
+      "priority": 48,
+      "enabled": true,
+      "briefRule": 20
+    },
+    {
+      "name": "Allow db.query",
+      "actionTypePattern": "db.query",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 100,
+      "enabled": true,
+      "briefRule": 22
+    },
+    {
+      "name": "Allow crm.read",
+      "actionTypePattern": "crm.read",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 101,
+      "enabled": true,
+      "briefRule": 22
+    },
+    {
+      "name": "Allow file.read",
+      "actionTypePattern": "file.read",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 102,
+      "enabled": true,
+      "briefRule": 22
+    },
+    {
+      "name": "Allow db.write",
+      "actionTypePattern": "db.write",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 103,
+      "enabled": true,
+      "briefRule": 28
+    },
+    {
+      "name": "Allow db.delete_rows",
+      "actionTypePattern": "db.delete_rows",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 104,
+      "enabled": true,
+      "briefRule": 23
+    },
+    {
+      "name": "Allow db.drop_table",
+      "actionTypePattern": "db.drop_table",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 105,
+      "enabled": true,
+      "briefRule": 23
+    },
+    {
+      "name": "Allow db.migrate",
+      "actionTypePattern": "db.migrate",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 106,
+      "enabled": true,
+      "briefRule": 23
+    },
+    {
+      "name": "Allow deploy.release",
+      "actionTypePattern": "deploy.release",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 107,
+      "enabled": true,
+      "briefRule": 23
+    },
+    {
+      "name": "Allow deploy.rollback",
+      "actionTypePattern": "deploy.rollback",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 108,
+      "enabled": true,
+      "briefRule": 24
+    },
+    {
+      "name": "Allow infra.scale",
+      "actionTypePattern": "infra.scale",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 109,
+      "enabled": true,
+      "briefRule": 28
+    },
+    {
+      "name": "Allow infra.delete_resource",
+      "actionTypePattern": "infra.delete_resource",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 110,
+      "enabled": true,
+      "briefRule": 23
+    },
+    {
+      "name": "Allow email.send",
+      "actionTypePattern": "email.send",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 111,
+      "enabled": true,
+      "briefRule": 25
+    },
+    {
+      "name": "Allow payment.refund",
+      "actionTypePattern": "payment.refund",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 112,
+      "enabled": true,
+      "briefRule": 26
+    },
+    {
+      "name": "Allow payment.charge",
+      "actionTypePattern": "payment.charge",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 113,
+      "enabled": true,
+      "briefRule": 26
+    },
+    {
+      "name": "Allow invoice.create",
+      "actionTypePattern": "invoice.create",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 114,
+      "enabled": true,
+      "briefRule": 26
+    },
+    {
+      "name": "Allow invoice.void",
+      "actionTypePattern": "invoice.void",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 115,
+      "enabled": true,
+      "briefRule": 26
+    },
+    {
+      "name": "Allow crm.update",
+      "actionTypePattern": "crm.update",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 116,
+      "enabled": true,
+      "briefRule": 27
+    },
+    {
+      "name": "Allow calendar.create_event",
+      "actionTypePattern": "calendar.create_event",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 117,
+      "enabled": true,
+      "briefRule": 27
+    },
+    {
+      "name": "Allow slack.post",
+      "actionTypePattern": "slack.post",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 118,
+      "enabled": true,
+      "briefRule": 27
+    },
+    {
+      "name": "Allow file.write",
+      "actionTypePattern": "file.write",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 119,
+      "enabled": true,
+      "briefRule": 29
+    },
+    {
+      "name": "Allow file.delete",
+      "actionTypePattern": "file.delete",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 120,
+      "enabled": true,
+      "briefRule": 29
+    },
+    {
+      "name": "Allow github.merge",
+      "actionTypePattern": "github.merge",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 121,
+      "enabled": true,
+      "briefRule": 30
+    },
+    {
+      "name": "Allow github.push",
+      "actionTypePattern": "github.push",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 122,
+      "enabled": true,
+      "briefRule": 30
+    },
+    {
+      "name": "Allow github.delete_branch",
+      "actionTypePattern": "github.delete_branch",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "allow",
+      "priority": 123,
+      "enabled": true,
+      "briefRule": 30
+    },
+    {
+      "name": "Hold anything not in the catalog",
+      "actionTypePattern": "*",
+      "targetPattern": "*",
+      "minRiskLevel": "low",
+      "decision": "require_approval",
+      "priority": 10000,
+      "enabled": true,
+      "briefRule": 21
+    }
+  ]
+}

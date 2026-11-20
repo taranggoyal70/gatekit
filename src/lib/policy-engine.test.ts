@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   evaluateAction,
+  globMatch,
   isRiskAtLeast,
   type PolicyRule,
 } from "./policy-engine";
@@ -285,5 +286,54 @@ describe("evaluateAction — default behavior with no matching policy", () => {
     );
     expect(result.decision).toBe("require_approval");
     expect(result.matchedPolicy).toBeNull();
+  });
+});
+
+describe("globMatch", () => {
+  it.each([
+    ["*", "", true],
+    ["*", "anything", true],
+    ["email.*", "email.send", true],
+    ["email.*", "email.", true],
+    ["email.*", "emailXsend", false],
+    ["*@external.com", "a@external.com", true],
+    ["*@external.com", "a@external.com.evil", false],
+    ["billing.charge", "billingXcharge", false],
+    ["prod.*", "Prod.orders", true],
+    ["*@prod", "API@PROD", true],
+    ["*@KESTREL.example", "dana@kestrel.example", true],
+    ["prod.*", "staging.orders", false],
+    ["a*b*c", "abc", true],
+    ["a*b*c", "aXXbYYc", true],
+    ["a*b*c", "aXXbYY", false],
+    ["*.prod.*", "db.prod.users", true],
+    ["*.prod.*", "db.staging.users", false],
+    ["cust_?", "cust_1", false],
+    ["cust_?", "cust_?", true],
+    ["[abc]", "[abc]", true],
+    ["[abc]", "a", false],
+    ["**", "x", true],
+    ["", "", true],
+    ["", "x", false],
+  ])("globMatch(%j, %j) is %s", (pattern, value, expected) => {
+    expect(globMatch(pattern, value)).toBe(expected);
+  });
+
+  it("stays fast on patterns that make a backtracking regex explode", () => {
+    // The previous regex implementation took ~39 s on the 5-star version of
+    // this input. The matcher must be polynomial on any policy pattern.
+    const pattern = `${"*a".repeat(40)}*b`;
+    const value = "a".repeat(500);
+    const started = performance.now();
+    expect(globMatch(pattern, value)).toBe(false);
+    expect(performance.now() - started).toBeLessThan(250);
+  });
+
+  it("is used for both action type and target in evaluateAction", () => {
+    const result = evaluateAction(
+      { actionType: `${"a".repeat(200)}`, target: "a".repeat(500), riskLevel: "low" },
+      [policy({ id: "p1", actionTypePattern: `${"*a".repeat(30)}*b`, decision: "deny" })],
+    );
+    expect(result.decision).toBe("allow");
   });
 });

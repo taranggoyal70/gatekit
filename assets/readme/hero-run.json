@@ -1,0 +1,75 @@
+{
+  "recordedAt": "2026-11-19T23:32:42.917Z",
+  "commit": "119bd67",
+  "policyPack": "kestrel-reference",
+  "policies": 56,
+  "cases": [
+    "dev-045",
+    "dev-020",
+    "dev-001",
+    "dev-043"
+  ],
+  "steps": [
+    {
+      "agent": "support",
+      "actionType": "email.send",
+      "target": "maria@harbor-foods.example",
+      "riskLevel": "low",
+      "scenario": "Send a tracking number to a customer",
+      "decision": "allow",
+      "policy": "Allow email.send",
+      "seq": 57,
+      "hash": "4c2b4dd6a4130052bfed7e8d0a3875f8937eb0059bae437a979895facc3989ea",
+      "prevHash": "54edd24119d77f65f072ba25dcbb3b59df8baf350824f05aec746f6c96acf792"
+    },
+    {
+      "agent": "support",
+      "actionType": "payment.refund",
+      "target": "ch_3PZ81",
+      "riskLevel": "high",
+      "scenario": "Refund an $1,800 damaged pallet",
+      "decision": "require_approval",
+      "policy": "Hold high-risk refunds",
+      "seq": 58,
+      "hash": "47328cd17ea6528d04e0a43f9b52db60794c428b3a7bcccd2fb2f9776def142e",
+      "prevHash": "4c2b4dd6a4130052bfed7e8d0a3875f8937eb0059bae437a979895facc3989ea",
+      "approval": {
+        "decision": "approved",
+        "seq": 61,
+        "hash": "0dd6788cf9ed564db12547af823e2239a17a0406348d567651c6b2f3a731b34e",
+        "prevHash": "933203328dd9f39b5c4b9763900ef7a0a534c0d00c805ef47c281fc118254474",
+        "reviewer": "finance-lead"
+      }
+    },
+    {
+      "agent": "ops",
+      "actionType": "db.drop_table",
+      "target": "prod.orders_legacy",
+      "riskLevel": "critical",
+      "scenario": "Drop the legacy orders table in production",
+      "decision": "deny",
+      "policy": "Deny production table drops",
+      "seq": 59,
+      "hash": "589dc2b41ccb2a8ba5acf6ced19f79383bea38c2c8e5873bf4f511d5bd8ca47a",
+      "prevHash": "47328cd17ea6528d04e0a43f9b52db60794c428b3a7bcccd2fb2f9776def142e"
+    },
+    {
+      "agent": "ops",
+      "actionType": "deploy.rollback",
+      "target": "api@prod",
+      "riskLevel": "high",
+      "scenario": "Roll back the production API after a bad release",
+      "decision": "allow",
+      "policy": "Allow deploy.rollback",
+      "seq": 60,
+      "hash": "933203328dd9f39b5c4b9763900ef7a0a534c0d00c805ef47c281fc118254474",
+      "prevHash": "589dc2b41ccb2a8ba5acf6ced19f79383bea38c2c8e5873bf4f511d5bd8ca47a"
+    }
+  ],
+  "verification": {
+    "ok": true,
+    "events": 61,
+    "headSeq": 61,
+    "headHash": "0dd6788cf9ed564db12547af823e2239a17a0406348d567651c6b2f3a731b34e"
+  }
+}

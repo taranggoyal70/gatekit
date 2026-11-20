@@ -6,6 +6,7 @@ import {
   createPolicy,
   deletePolicy,
   listPolicies,
+  policyPatchSchema,
   updatePolicy,
 } from "@/lib/services/policies";
 import { testDb, truncateAll } from "@/lib/services/test-db";
@@ -132,5 +133,47 @@ describeIfDb("policies service (integration)", () => {
     await expect(
       deletePolicy(database!, orgId, "00000000-0000-0000-0000-000000000000"),
     ).rejects.toThrow(AppError);
+  });
+});
+
+describe("policies service: partial updates (integration)", () => {
+  let orgId: string;
+
+  beforeEach(async () => {
+    await truncateAll(database);
+    const [org] = await database
+      .insert(organizations)
+      .values({ name: "Patch Org", slug: `patch-${Date.now()}-${Math.random()}` })
+      .returning();
+    orgId = org!.id;
+  });
+
+  it("toggling enabled leaves every other field alone", async () => {
+    // Regression: the PATCH route used policyInputSchema.partial(), and zod 4
+    // still applies .default() inside .partial(), so { enabled: false } came
+    // back with targetPattern "*", minRiskLevel "low" and priority 100.
+    const created = await createPolicy(database, orgId, {
+      name: "hold VIP refunds",
+      actionTypePattern: "payment.refund",
+      targetPattern: "cust_vip_*",
+      minRiskLevel: "high",
+      decision: "require_approval",
+      priority: 5,
+      enabled: true,
+    });
+    const body = policyPatchSchema.parse({ enabled: false });
+    expect(body).toEqual({ enabled: false });
+
+    const updated = await updatePolicy(database, orgId, created.id, body);
+    expect(updated).toMatchObject({
+      enabled: false,
+      targetPattern: "cust_vip_*",
+      minRiskLevel: "high",
+      priority: 5,
+    });
+  });
+
+  it("rejects unknown fields instead of silently dropping them", () => {
+    expect(() => policyPatchSchema.parse({ enabled: true, orgId: "x" })).toThrow();
   });
 });

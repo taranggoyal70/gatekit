@@ -10,7 +10,8 @@ const scenarios = [
     risk: "HIGH",
     decision: "APPROVAL REQUIRED",
     tone: "review",
-    policy: "Refunds above $1,000 require finance approval",
+    policy: "High-risk refunds need finance approval",
+    priority: 35,
   },
   {
     label: "Send follow-up",
@@ -19,7 +20,8 @@ const scenarios = [
     risk: "LOW",
     decision: "ALLOWED",
     tone: "allow",
-    policy: "Outbound follow-ups are allowed for verified leads",
+    policy: "Routine customer email is allowed",
+    priority: 110,
   },
   {
     label: "Export customer data",
@@ -28,7 +30,8 @@ const scenarios = [
     risk: "CRITICAL",
     decision: "BLOCKED",
     tone: "deny",
-    policy: "Production data exports are denied for autonomous agents",
+    policy: "Customer data exports are denied",
+    priority: 21,
   },
 ] as const;
 
@@ -38,7 +41,7 @@ export function LandingDecisionConsole() {
   return (
     <div className="gate-console" aria-label="Interactive policy decision demo">
       <div className="gate-console-bar">
-        <span><i /> LIVE POLICY TRACE</span>
+        <span><i /> EXAMPLE POLICY TRACE</span>
         <code>agent_sales_04</code>
       </div>
 
@@ -63,20 +66,20 @@ export function LandingDecisionConsole() {
         </div>
         <div className="gate-trace-line">
           <span>02</span>
-          <div><small>RISK CLASSIFIER</small><strong>{scenario.risk}</strong></div>
-          <code>12ms</code>
+          <div><small>RISK LEVEL</small><strong>{scenario.risk}</strong></div>
+          <code>set by agent</code>
         </div>
         <div className="gate-trace-line">
           <span>03</span>
           <div><small>POLICY MATCH</small><strong>{scenario.policy}</strong></div>
-          <code>8ms</code>
+          <code>priority {scenario.priority}</code>
         </div>
       </div>
 
       <div className={`gate-decision gate-decision-${scenario.tone}`}>
         <span>DECISION</span>
         <strong>{scenario.decision}</strong>
-        <small>Total evaluation time · 20ms</small>
+        <small>Appended to the hash-chained audit log</small>
       </div>
     </div>
   );

@@ -1,20 +1,19 @@
 import { db } from "@/db/client";
 import { requireOrgContext } from "@/lib/auth";
 import { toErrorResponse } from "@/lib/errors";
-import { listActions } from "@/lib/services/actions";
+import { actionListFiltersSchema, listActions } from "@/lib/services/actions";
 
 export async function GET(request: Request) {
   try {
     const { org } = await requireOrgContext();
-    const url = new URL(request.url);
-    const actions = await listActions(db(), org.id, {
-      status: url.searchParams.get("status") ?? undefined,
-      agentId: url.searchParams.get("agentId") ?? undefined,
-      cursor: url.searchParams.get("cursor") ?? undefined,
-      limit: url.searchParams.get("limit")
-        ? Number(url.searchParams.get("limit"))
-        : undefined,
+    const params = new URL(request.url).searchParams;
+    const filters = actionListFiltersSchema.parse({
+      status: params.get("status") ?? undefined,
+      agentId: params.get("agentId") ?? undefined,
+      cursor: params.get("cursor") ?? undefined,
+      limit: params.get("limit") ?? undefined,
     });
+    const actions = await listActions(db(), org.id, filters);
     return Response.json({ actions });
   } catch (error) {
     return toErrorResponse(error);

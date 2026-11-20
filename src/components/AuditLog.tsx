@@ -46,7 +46,7 @@ export function AuditLog() {
         </div>
       )}
 
-      <div className="flex gap-1">
+      <div className="flex flex-wrap gap-1">
         {STATUS_FILTERS.map((filter) => (
           <button
             key={filter}
@@ -78,13 +78,16 @@ export function AuditLog() {
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{action.actionType}</p>
                 <p className="truncate text-xs text-[var(--foreground)]/50">{action.target}</p>
+                <p className="mt-0.5 text-xs text-[var(--foreground)]/40 sm:hidden">
+                  {action.riskLevel} risk · {new Date(action.createdAt).toLocaleString()}
+                </p>
               </div>
               <div className="flex shrink-0 items-center gap-3">
-                <span className="text-xs uppercase tracking-wide text-[var(--foreground)]/40">
+                <span className="hidden text-xs uppercase tracking-wide text-[var(--foreground)]/40 sm:inline">
                   {action.riskLevel}
                 </span>
                 <DecisionBadge decision={action.decision} status={action.status} />
-                <span className="w-36 text-right text-xs text-[var(--foreground)]/40">
+                <span className="hidden w-36 text-right text-xs text-[var(--foreground)]/40 sm:inline">
                   {new Date(action.createdAt).toLocaleString()}
                 </span>
               </div>

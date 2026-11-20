@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { db } from "@/db/client";
 import { requireOrgContext } from "@/lib/auth";
-import { toErrorResponse } from "@/lib/errors";
+import { readJsonBody, toErrorResponse } from "@/lib/errors";
 import { createAgent, listAgents } from "@/lib/services/agents";
 
 const createAgentSchema = z.object({
@@ -23,7 +23,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const { org } = await requireOrgContext();
-    const raw = await request.json();
+    const raw = await readJsonBody(request);
     const input = createAgentSchema.parse(raw);
     const { agent, plaintextKey } = await createAgent(db(), org.id, input);
     return Response.json({ agent, key: plaintextKey }, { status: 201 });

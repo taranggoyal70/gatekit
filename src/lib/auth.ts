@@ -6,6 +6,9 @@ import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { orgMembers, organizations } from "@/db/schema";
 import { AppError } from "@/lib/errors";
+import { assertOrgRole, type OrgRole } from "@/lib/roles";
+
+export { assertOrgRole, hasOrgRole, type OrgRole } from "@/lib/roles";
 
 export type AuthedUser = {
   userId: string;
@@ -108,12 +111,6 @@ export async function requireOrgMembership(userId: string, orgId: string) {
   return membership;
 }
 
-const ROLE_RANK: Record<"owner" | "admin" | "member", number> = {
-  member: 0,
-  admin: 1,
-  owner: 2,
-};
-
 /**
  * Membership management (invite, remove, change role) is restricted to
  * admins and owners — a plain member can use the product but shouldn't be
@@ -122,15 +119,9 @@ const ROLE_RANK: Record<"owner" | "admin" | "member", number> = {
 export async function requireOrgRole(
   userId: string,
   orgId: string,
-  minRole: "owner" | "admin" | "member",
+  minRole: OrgRole,
 ) {
   const membership = await requireOrgMembership(userId, orgId);
-  if (ROLE_RANK[membership.role] < ROLE_RANK[minRole]) {
-    throw new AppError(
-      `This action requires the "${minRole}" role or higher.`,
-      403,
-      "insufficient_role",
-    );
-  }
+  assertOrgRole(membership.role, minRole);
   return membership;
 }

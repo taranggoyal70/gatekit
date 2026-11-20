@@ -121,7 +121,9 @@ export function BillingPanel() {
           </button>
         ) : (
           <a
-            href="mailto:hello@gatekit.dev?subject=Gatekit%20Pro"
+            href="https://github.com/taranggoyal70/gatekit/issues/new?title=Gatekit%20Pro%20upgrade"
+            target="_blank"
+            rel="noreferrer"
             className="rounded-lg border border-[var(--line)] px-4 py-2 text-sm font-medium"
           >
             Contact us to upgrade

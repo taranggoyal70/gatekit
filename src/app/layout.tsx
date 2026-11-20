@@ -4,7 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION, siteUrl } from "@/lib/site";
 import "./globals.css";
 
-const title = `${SITE_NAME} — ${SITE_TAGLINE}`;
+const title = `${SITE_NAME} | ${SITE_TAGLINE}`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),

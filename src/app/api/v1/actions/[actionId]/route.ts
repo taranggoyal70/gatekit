@@ -1,6 +1,6 @@
 import { authenticateAgent } from "@/lib/agent-auth";
 import { db } from "@/db/client";
-import { toErrorResponse } from "@/lib/errors";
+import { parseId, toErrorResponse } from "@/lib/errors";
 import { getActionStatus, expirePastDueApprovals } from "@/lib/services/actions";
 
 export async function GET(
@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const agent = await authenticateAgent(request);
-    const { actionId } = await context.params;
+    const actionId = parseId((await context.params).actionId, "Action");
     const database = db();
     await expirePastDueApprovals(database, agent.orgId);
     const { action, approval } = await getActionStatus(database, agent.orgId, actionId);

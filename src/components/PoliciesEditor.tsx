@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { DecisionBadge } from "@/components/DecisionBadge";
+
 type Policy = {
   id: string;
   name: string;
@@ -30,6 +32,7 @@ export function PoliciesEditor() {
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState(EMPTY_DRAFT);
   const [creating, setCreating] = useState(false);
+  const [canEdit, setCanEdit] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -37,6 +40,7 @@ export function PoliciesEditor() {
       if (!res.ok) throw new Error();
       const data = await res.json();
       setPolicies(data.policies);
+      setCanEdit(data.canEdit === true);
     } catch {
       setError("Failed to load policies.");
     }
@@ -72,20 +76,49 @@ export function PoliciesEditor() {
     }
   }
 
+  // Optimistic, but never left wrong: if the server refuses, restore the
+  // previous list and say so. A governance UI must not show a policy as
+  // enabled when it is not.
   async function toggleEnabled(policy: Policy) {
+    const previous = policies;
+    setError(null);
     setPolicies((prev) =>
       prev?.map((p) => (p.id === policy.id ? { ...p, enabled: !p.enabled } : p)) ?? null,
     );
-    await fetch(`/api/policies/${policy.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ enabled: !policy.enabled }),
-    });
+    try {
+      const res = await fetch(`/api/policies/${policy.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled: !policy.enabled }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error?.message);
+      }
+      const data = (await res.json()) as { policy: Policy };
+      setPolicies((prev) => prev?.map((p) => (p.id === policy.id ? data.policy : p)) ?? null);
+    } catch (err) {
+      setPolicies(previous);
+      const detail = err instanceof Error && err.message ? ` ${err.message}` : "";
+      setError(`Could not ${policy.enabled ? "disable" : "enable"} "${policy.name}". Nothing changed.${detail}`);
+    }
   }
 
   async function remove(policyId: string) {
+    const previous = policies;
+    setError(null);
     setPolicies((prev) => prev?.filter((p) => p.id !== policyId) ?? null);
-    await fetch(`/api/policies/${policyId}`, { method: "DELETE" });
+    try {
+      const res = await fetch(`/api/policies/${policyId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error?.message);
+      }
+    } catch (err) {
+      setPolicies(previous);
+      const detail = err instanceof Error && err.message ? ` ${err.message}` : "";
+      setError(`Could not delete the policy. Nothing changed.${detail}`);
+    }
   }
 
   return (
@@ -96,76 +129,84 @@ export function PoliciesEditor() {
         </div>
       )}
 
-      <div className="rounded-xl border border-[var(--line)] p-4">
-        <p className="mb-3 text-sm font-medium">New policy</p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Name">
-            <input
-              value={draft.name}
-              onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
-              placeholder="Block competitor emails"
-              className="input w-full"
-            />
-          </Field>
-          <Field label="Priority (lower = evaluated first)">
-            <input
-              type="number"
-              value={draft.priority}
-              onChange={(e) => setDraft((d) => ({ ...d, priority: Number(e.target.value) }))}
-              className="input w-full"
-            />
-          </Field>
-          <Field label="Action type pattern">
-            <input
-              value={draft.actionTypePattern}
-              onChange={(e) => setDraft((d) => ({ ...d, actionTypePattern: e.target.value }))}
-              placeholder="email.* or payment.refund"
-              className="input w-full"
-            />
-          </Field>
-          <Field label="Target pattern">
-            <input
-              value={draft.targetPattern}
-              onChange={(e) => setDraft((d) => ({ ...d, targetPattern: e.target.value }))}
-              placeholder="*@competitor.com"
-              className="input w-full"
-            />
-          </Field>
-          <Field label="Minimum risk level">
-            <select
-              value={draft.minRiskLevel}
-              onChange={(e) => setDraft((d) => ({ ...d, minRiskLevel: e.target.value }))}
-              className="input w-full"
-            >
-              {RISK_LEVELS.map((level) => (
-                <option key={level} value={level}>
-                  {level}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Decision">
-            <select
-              value={draft.decision}
-              onChange={(e) => setDraft((d) => ({ ...d, decision: e.target.value }))}
-              className="input w-full"
-            >
-              {DECISIONS.map((decision) => (
-                <option key={decision} value={decision}>
-                  {decision.replace("_", " ")}
-                </option>
-              ))}
-            </select>
-          </Field>
+      {policies !== null && !canEdit && (
+        <div className="rounded-lg border border-[var(--line)] px-4 py-2 text-sm text-[var(--foreground)]/70">
+          You can view policies. Only admins and owners can create, change or delete them.
         </div>
-        <button
-          onClick={createPolicy}
-          disabled={creating}
-          className="mt-4 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[#04141a] disabled:opacity-40"
-        >
-          {creating ? "Creating…" : "Create policy"}
-        </button>
-      </div>
+      )}
+
+      {canEdit && (
+        <div className="rounded-xl border border-[var(--line)] p-4">
+          <p className="mb-3 text-sm font-medium">New policy</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Name">
+              <input
+                value={draft.name}
+                onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+                placeholder="Block competitor emails"
+                className="input w-full"
+              />
+            </Field>
+            <Field label="Priority (lower = evaluated first)">
+              <input
+                type="number"
+                value={draft.priority}
+                onChange={(e) => setDraft((d) => ({ ...d, priority: Number(e.target.value) }))}
+                className="input w-full"
+              />
+            </Field>
+            <Field label="Action type pattern">
+              <input
+                value={draft.actionTypePattern}
+                onChange={(e) => setDraft((d) => ({ ...d, actionTypePattern: e.target.value }))}
+                placeholder="email.* or payment.refund"
+                className="input w-full"
+              />
+            </Field>
+            <Field label="Target pattern">
+              <input
+                value={draft.targetPattern}
+                onChange={(e) => setDraft((d) => ({ ...d, targetPattern: e.target.value }))}
+                placeholder="*@competitor.com"
+                className="input w-full"
+              />
+            </Field>
+            <Field label="Minimum risk level">
+              <select
+                value={draft.minRiskLevel}
+                onChange={(e) => setDraft((d) => ({ ...d, minRiskLevel: e.target.value }))}
+                className="input w-full"
+              >
+                {RISK_LEVELS.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Decision">
+              <select
+                value={draft.decision}
+                onChange={(e) => setDraft((d) => ({ ...d, decision: e.target.value }))}
+                className="input w-full"
+              >
+                {DECISIONS.map((decision) => (
+                  <option key={decision} value={decision}>
+                    {decision.replace("_", " ")}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </div>
+          <button
+            onClick={createPolicy}
+            disabled={creating}
+            className="mt-4 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[#04141a] disabled:opacity-40"
+          >
+            {creating ? "Creating…" : "Create policy"}
+          </button>
+        </div>
+      )}
 
       {policies === null ? (
         <div className="h-32 animate-pulse rounded-xl border border-[var(--line)]" />
@@ -178,7 +219,7 @@ export function PoliciesEditor() {
           {policies.map((policy) => (
             <div
               key={policy.id}
-              className="flex items-center justify-between gap-4 border-b border-[var(--line)] px-4 py-3 last:border-0"
+              className="flex flex-col gap-2 border-b border-[var(--line)] px-4 py-3 last:border-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
             >
               <div className="min-w-0">
                 <p className="text-sm font-medium">{policy.name}</p>
@@ -188,23 +229,25 @@ export function PoliciesEditor() {
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-3">
-                <span className="rounded-full bg-[var(--line)] px-2.5 py-1 text-xs capitalize">
-                  {policy.decision.replace("_", " ")}
-                </span>
+                <DecisionBadge decision={policy.decision} status="resolved" />
                 <label className="flex items-center gap-1.5 text-xs">
                   <input
                     type="checkbox"
+                    className="accent-[var(--accent)]"
                     checked={policy.enabled}
+                    disabled={!canEdit}
                     onChange={() => toggleEnabled(policy)}
                   />
                   Enabled
                 </label>
-                <button
-                  onClick={() => remove(policy.id)}
-                  className="text-xs text-[var(--danger)] hover:underline"
-                >
-                  Delete
-                </button>
+                {canEdit && (
+                  <button
+                    onClick={() => remove(policy.id)}
+                    className="text-xs text-[var(--danger)] hover:underline"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </div>
           ))}

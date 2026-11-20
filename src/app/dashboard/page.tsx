@@ -1,6 +1,8 @@
+import { count, eq } from "drizzle-orm";
 import Link from "next/link";
 
 import { db } from "@/db/client";
+import { actions } from "@/db/schema";
 import { requireOrgContext } from "@/lib/auth";
 import { DashboardShell } from "@/components/DashboardShell";
 import { listAgents } from "@/lib/services/agents";
@@ -11,10 +13,11 @@ import { DecisionBadge } from "@/components/DecisionBadge";
 export default async function DashboardPage() {
   const { org } = await requireOrgContext();
   const database = db();
-  const [agents, recentActions, pendingApprovals] = await Promise.all([
+  const [agents, recentActions, pendingApprovals, [totals]] = await Promise.all([
     listAgents(database, org.id),
     listActions(database, org.id, { limit: 10 }),
     listPendingApprovals(database, org.id),
+    database.select({ actions: count() }).from(actions).where(eq(actions.orgId, org.id)),
   ]);
 
   return (
@@ -37,7 +40,7 @@ export default async function DashboardPage() {
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <StatCard label="Registered agents" value={agents.length} />
         <StatCard label="Pending approvals" value={pendingApprovals.length} tone={pendingApprovals.length > 0 ? "warn" : undefined} />
-        <StatCard label="Actions (last 10 shown)" value={recentActions.length} />
+        <StatCard label="Actions recorded" value={totals?.actions ?? 0} />
       </div>
 
       {pendingApprovals.length > 0 && (

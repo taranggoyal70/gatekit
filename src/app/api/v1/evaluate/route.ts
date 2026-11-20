@@ -1,6 +1,6 @@
 import { authenticateAgent } from "@/lib/agent-auth";
 import { db } from "@/db/client";
-import { AppError, toErrorResponse } from "@/lib/errors";
+import { readJsonBody, toErrorResponse } from "@/lib/errors";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { evaluateAndRecordAction, evaluateInputSchema } from "@/lib/services/actions";
 
@@ -11,8 +11,9 @@ const MAX_BODY_BYTES = 20_000;
 export async function POST(request: Request) {
   try {
     const agent = await authenticateAgent(request);
+    const database = db();
 
-    const rate = checkRateLimit(`evaluate:${agent.id}`, RATE_LIMIT, RATE_WINDOW_MS);
+    const rate = await checkRateLimit(database, `evaluate:${agent.id}`, RATE_LIMIT, RATE_WINDOW_MS);
     const rateHeaders = {
       "X-RateLimit-Limit": String(RATE_LIMIT),
       "X-RateLimit-Remaining": String(rate.remaining),
@@ -24,18 +25,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const contentLength = Number(request.headers.get("content-length") ?? "0");
-    if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
-      throw new AppError("Request body is too large.", 413, "payload_too_large");
-    }
-
-    const raw = await request.json().catch(() => {
-      throw new AppError("Request body must be valid JSON.", 400, "bad_request");
-    });
+    const raw = await readJsonBody(request, MAX_BODY_BYTES);
     const input = evaluateInputSchema.parse(raw);
 
     const { action, approval, reason } = await evaluateAndRecordAction(
-      db(),
+      database,
       agent.orgId,
       agent.id,
       input,
@@ -53,12 +47,6 @@ export async function POST(request: Request) {
       { headers: rateHeaders },
     );
   } catch (error) {
-    if (error instanceof Error && error.name === "ZodError") {
-      return Response.json(
-        { error: { message: "Invalid request body.", code: "validation_error", details: error.message } },
-        { status: 400 },
-      );
-    }
     return toErrorResponse(error);
   }
 }

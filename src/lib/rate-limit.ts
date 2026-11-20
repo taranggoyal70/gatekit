@@ -1,6 +1,7 @@
-type RateEntry = { count: number; resetAt: number };
+import { sql } from "drizzle-orm";
 
-const buckets = new Map<string, RateEntry>();
+import { rateLimits } from "@/db/schema";
+import type { Database } from "@/lib/services/types";
 
 export type RateLimitResult = {
   allowed: boolean;
@@ -9,32 +10,42 @@ export type RateLimitResult = {
 };
 
 /**
- * Best-effort in-memory limiter — fine for a single server instance, and
- * intentionally not backed by a shared store yet. If Gatekit scales to
- * multiple instances, swap this for Upstash/Redis without changing the
- * call sites (the signature is already keyed + windowed).
+ * Fixed-window limiter backed by Postgres, so every server instance shares
+ * one count per key. A single atomic upsert either starts a new window or
+ * increments the current one; the database clock decides which, so instances
+ * with skewed clocks still agree.
+ *
+ * It costs one round trip per call, on the same database the evaluate path
+ * already writes to, which is cheaper than adding a second store to operate.
  */
-export function checkRateLimit(
+export async function checkRateLimit(
+  database: Database,
   key: string,
   limit: number,
   windowMs: number,
-): RateLimitResult {
-  const now = Date.now();
-  const existing = buckets.get(key);
-  const entry: RateEntry =
-    !existing || existing.resetAt <= now
-      ? { count: 0, resetAt: now + windowMs }
-      : existing;
-  entry.count += 1;
-  buckets.set(key, entry);
+): Promise<RateLimitResult> {
+  const windowSeconds = windowMs / 1000;
+  const expired = sql`${rateLimits.windowStart} <= now() - make_interval(secs => ${windowSeconds})`;
 
-  if (buckets.size > 50_000) {
-    for (const [k, v] of buckets) if (v.resetAt <= now) buckets.delete(k);
-  }
+  const [row] = await database
+    .insert(rateLimits)
+    .values({ key, windowStart: sql`now()`, count: 1 })
+    .onConflictDoUpdate({
+      target: rateLimits.key,
+      set: {
+        count: sql`CASE WHEN ${expired} THEN 1 ELSE ${rateLimits.count} + 1 END`,
+        windowStart: sql`CASE WHEN ${expired} THEN now() ELSE ${rateLimits.windowStart} END`,
+      },
+    })
+    .returning({
+      count: rateLimits.count,
+      secondsLeft: sql<string>`extract(epoch from (${rateLimits.windowStart} + make_interval(secs => ${windowSeconds}) - now()))`,
+    });
+  if (!row) throw new Error("Rate limit upsert returned no row.");
 
   return {
-    allowed: entry.count <= limit,
-    remaining: Math.max(0, limit - entry.count),
-    retryAfterSeconds: Math.max(1, Math.ceil((entry.resetAt - now) / 1000)),
+    allowed: row.count <= limit,
+    remaining: Math.max(0, limit - row.count),
+    retryAfterSeconds: Math.max(1, Math.ceil(Number(row.secondsLeft))),
   };
 }

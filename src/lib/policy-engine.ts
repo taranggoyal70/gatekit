@@ -3,7 +3,7 @@
  * take and the org's configured policies, decide whether it may proceed
  * immediately, must be blocked, or must wait for a human to approve it.
  *
- * Design choices (see docs/adr for the reasoning):
+ * Design choices (see README, "Engineering decisions"):
  * - First-match-wins over priority (ascending — lower number = evaluated
  *   first), not "most specific wins" or "most restrictive wins". Explicit
  *   ordering is easier for an org's security team to audit than an implicit
@@ -59,21 +59,51 @@ export type EvaluationResult = {
 };
 
 /**
- * Compile a glob-style pattern ("*" = any run of characters, everything
- * else literal) into an anchored matcher. Patterns are user-authored policy
- * config, not regex — a bare "." or "+" must be treated literally or a
- * policy like "billing.charge" would accidentally match "billingXcharge".
+ * Glob match: "*" matches any run of characters (including none); every
+ * other character is literal, so a policy like "billing.charge" never
+ * matches "billingXcharge". The whole value must match.
+ *
+ * Matching ignores case. Agents do not normalize what they send: the eval's
+ * held-out split found `Prod.orders`, `API@PROD` and `KESTREL/API:MAIN`
+ * slipping past rules written as `prod.*`, `*@prod` and `kestrel/api:*`.
+ * Email addresses, hostnames and unquoted Postgres identifiers are
+ * case-insensitive anyway, so a governance rule should be too.
+ *
+ * This is a greedy two-pointer matcher with single-star backtracking, which
+ * runs in O(pattern × value) worst case and needs no allocation. An earlier
+ * version compiled patterns to `^…$` regexes with `.*`; V8 backtracks those
+ * exponentially, and the 12-character pattern "*a*a*a*a*a*b" held the event
+ * loop for about 39 seconds on a 120-character target. Policy patterns are
+ * authored by any org member, so matching must stay linear-ish on any input.
  */
-function compilePattern(pattern: string): RegExp {
-  const escaped = pattern
-    .split("*")
-    .map((segment) => segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-    .join(".*");
-  return new RegExp(`^${escaped}$`);
-}
+export function globMatch(rawPattern: string, rawValue: string): boolean {
+  const pattern = rawPattern.toLowerCase();
+  const value = rawValue.toLowerCase();
+  let p = 0;
+  let v = 0;
+  let starP = -1;
+  let starV = 0;
 
-function matches(pattern: string, value: string): boolean {
-  return compilePattern(pattern).test(value);
+  while (v < value.length) {
+    if (p < pattern.length && pattern[p] === "*") {
+      starP = p;
+      starV = v;
+      p += 1;
+    } else if (p < pattern.length && pattern[p] === value[v]) {
+      p += 1;
+      v += 1;
+    } else if (starP !== -1) {
+      // Let the most recent star absorb one more character and retry.
+      p = starP + 1;
+      starV += 1;
+      v = starV;
+    } else {
+      return false;
+    }
+  }
+
+  while (p < pattern.length && pattern[p] === "*") p += 1;
+  return p === pattern.length;
 }
 
 /**
@@ -98,13 +128,13 @@ export function evaluateAction(
   const candidates = sortPolicies(policies.filter((policy) => policy.enabled));
 
   for (const policy of candidates) {
-    const actionTypeMatches = matches(
+    const actionTypeMatches = globMatch(
       policy.actionTypePattern,
       request.actionType,
     );
     if (!actionTypeMatches) continue;
 
-    const targetMatches = matches(policy.targetPattern, request.target);
+    const targetMatches = globMatch(policy.targetPattern, request.target);
     if (!targetMatches) continue;
 
     const riskMatches = isRiskAtLeast(request.riskLevel, policy.minRiskLevel);

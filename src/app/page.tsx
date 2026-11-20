@@ -1,27 +1,17 @@
 import Link from "next/link";
 import { LandingDecisionConsole } from "@/components/LandingDecisionConsole";
+import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { siteUrl } from "@/lib/site";
 
 export default function LandingPage() {
   return (
     <div className="gate-site">
-      <header className="gate-header">
-        <div className="gate-header-inner">
-          <div className="gate-brand">
-            <span>G/</span>
-            <strong>Gatekit</strong>
-          </div>
-          <nav>
-            <Link href="/docs">Documentation</Link>
-            <a href="https://github.com/taranggoyal70/gatekit" target="_blank" rel="noreferrer">GitHub ↗</a>
-            <Link href="/sign-up" className="gate-nav-cta">Open console</Link>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main>
         <section className="gate-hero">
           <div className="gate-hero-copy">
-            <p className="gate-kicker"><span /> AGENTFORGE HACKATHON WINNER</p>
+            <p className="gate-kicker"><span /> AGENTROGUE HACKATHON 2026 WINNER</p>
             <h1>Agents move fast.<br /><em>Gatekit decides faster.</em></h1>
             <p className="gate-hero-description">
               A control layer between AI agents and real-world actions. Every call is
@@ -63,7 +53,10 @@ export default function LandingPage() {
             <pre>
 {`import { GatekitClient } from "@gatekit/sdk";
 
-const gatekit = new GatekitClient({ apiKey: process.env.GATEKIT_KEY! });
+const gatekit = new GatekitClient({
+  apiKey: process.env.GATEKIT_KEY!,
+  baseUrl: "${siteUrl()}",
+});
 
 await gatekit.guard(
   { actionType: "payment.refund", target: customerId, riskLevel: "high" },
@@ -74,11 +67,7 @@ await gatekit.guard(
         </section>
       </main>
 
-      <footer className="gate-footer">
-        <strong>Gatekit</strong>
-        <span>Governance for agents that do more than chat.</span>
-        <a href="https://github.com/taranggoyal70/gatekit" target="_blank" rel="noreferrer">View source ↗</a>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

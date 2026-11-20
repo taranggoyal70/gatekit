@@ -55,9 +55,19 @@ export function AgentsManager() {
     }
   }
 
+  // A failed revoke must never look like a successful one: the key would
+  // still authenticate while the UI showed it gone.
   async function revoke(agentId: string) {
+    const previous = agents;
+    setError(null);
     setAgents((prev) => prev?.filter((a) => a.id !== agentId) ?? null);
-    await fetch(`/api/agents/${agentId}`, { method: "DELETE" });
+    try {
+      const res = await fetch(`/api/agents/${agentId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+    } catch {
+      setAgents(previous);
+      setError("Could not revoke the key. It is still active; try again.");
+    }
   }
 
   return (
@@ -71,7 +81,7 @@ export function AgentsManager() {
       {revealedKey && (
         <div className="rounded-xl border border-[var(--accent)]/30 bg-[var(--accent)]/5 p-4">
           <p className="text-sm font-medium text-[var(--accent)]">
-            Copy this key now — it won&apos;t be shown again.
+            Copy this key now. It won&apos;t be shown again.
           </p>
           <div className="mt-2 flex items-center gap-2">
             <code className="flex-1 overflow-x-auto rounded-lg bg-[var(--surface)] px-3 py-2 font-mono text-xs">

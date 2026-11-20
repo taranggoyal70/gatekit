@@ -10,25 +10,29 @@ import { resolveUserEmails } from "@/lib/user-directory";
 
 let _resend: Resend | null = null;
 
-function resend(): Resend | null {
-  if (_resend) return _resend;
+/**
+ * Email is on only when both the Resend key and a sender are set. There is
+ * no default sender: Resend rejects any address on a domain you have not
+ * verified with it, so a built-in default would fail on every send.
+ */
+function mailer(): { client: Resend; from: string } | null {
   const key = process.env.RESEND_API_KEY;
-  if (!key) return null;
-  _resend = new Resend(key);
-  return _resend;
+  const from = process.env.GATEKIT_NOTIFICATION_FROM;
+  if (!key || !from) return null;
+  _resend ??= new Resend(key);
+  return { client: _resend, from };
 }
 
 /**
  * Best-effort email fan-out to every member of the org when an action is
- * held for approval. Missing RESEND_API_KEY or Clerk lookup failures must
+ * held for approval. Unconfigured email or Clerk lookup failures must
  * never fail the evaluate() call — the action is already correctly recorded
  * as pending regardless of whether anyone gets notified about it.
  */
 export async function sendApprovalRequestEmail(orgId: string, action: Action) {
-  const client = resend();
-  if (!client) return;
-
-  const from = process.env.GATEKIT_NOTIFICATION_FROM ?? "Gatekit <notifications@gatekit.dev>";
+  const mail = mailer();
+  if (!mail) return;
+  const { client, from } = mail;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
   const members = await db()
@@ -66,10 +70,9 @@ export async function sendInviteEmail(
   orgName: string,
   invite: { email: string; token: string; invitedByEmail: string },
 ) {
-  const client = resend();
-  if (!client) return;
-
-  const from = process.env.GATEKIT_NOTIFICATION_FROM ?? "Gatekit <notifications@gatekit.dev>";
+  const mail = mailer();
+  if (!mail) return;
+  const { client, from } = mail;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
   await client.emails.send({

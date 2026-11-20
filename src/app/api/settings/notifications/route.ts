@@ -1,6 +1,6 @@
 import { db } from "@/db/client";
 import { requireOrgContext, requireOrgRole } from "@/lib/auth";
-import { toErrorResponse } from "@/lib/errors";
+import { readJsonBody, toErrorResponse } from "@/lib/errors";
 import {
   getNotificationSettings,
   setSlackWebhook,
@@ -23,7 +23,7 @@ export async function PUT(request: Request) {
   try {
     const { org, user } = await requireOrgContext();
     await requireOrgRole(user.userId, org.id, "admin");
-    const raw = await request.json();
+    const raw = await readJsonBody(request);
     const { slackWebhookUrl } = slackWebhookInputSchema.parse(raw);
     const settings = await setSlackWebhook(db(), org.id, slackWebhookUrl);
     return Response.json({ slackWebhookUrl: settings?.slackWebhookUrl ?? null });

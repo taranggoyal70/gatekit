@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { db } from "@/db/client";
 import { requireOrgContext, requireOrgRole } from "@/lib/auth";
-import { toErrorResponse } from "@/lib/errors";
+import { parseId, readJsonBody, toErrorResponse } from "@/lib/errors";
 import { removeMember, updateMemberRole } from "@/lib/services/team";
 
 const roleUpdateSchema = z.object({
@@ -16,8 +16,8 @@ export async function PATCH(
   try {
     const { org, user } = await requireOrgContext();
     await requireOrgRole(user.userId, org.id, "admin");
-    const { memberId } = await context.params;
-    const raw = await request.json();
+    const memberId = parseId((await context.params).memberId, "Member");
+    const raw = await readJsonBody(request);
     const { role } = roleUpdateSchema.parse(raw);
     const member = await updateMemberRole(db(), org.id, memberId, role);
     return Response.json({ member });
@@ -33,7 +33,7 @@ export async function DELETE(
   try {
     const { org, user } = await requireOrgContext();
     await requireOrgRole(user.userId, org.id, "admin");
-    const { memberId } = await context.params;
+    const memberId = parseId((await context.params).memberId, "Member");
     await removeMember(db(), org.id, memberId);
     return new Response(null, { status: 204 });
   } catch (error) {
