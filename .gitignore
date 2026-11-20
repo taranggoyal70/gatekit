@@ -13,3 +13,7 @@ packages/sdk/dist
 .agents
 .claude
 skills-lock.json
+.clerk
+
+# clerk configuration (can include secrets)
+/.clerk/

@@ -19,6 +19,8 @@
     "eval": "tsx --conditions=react-server eval/run.ts",
     "eval:check": "tsx --conditions=react-server eval/run.ts --check",
     "readme:assets": "tsx --conditions=react-server scripts/readme-assets.ts",
+    "audit:verify-checkpoint": "tsx --conditions=react-server scripts/verify-checkpoint.ts",
+    "changelog": "tsx scripts/changelog.ts",
     "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm eval:check && pnpm readme:assets --check"
   },
   "dependencies": {
