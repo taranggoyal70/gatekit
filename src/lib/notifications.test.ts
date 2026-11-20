@@ -12,6 +12,16 @@ describe("sendApprovalRequestEmail", () => {
     if (originalKey) process.env.RESEND_API_KEY = originalKey;
   });
 
+  it("is a no-op when a key is set but no sender is, since Resend would reject any default", async () => {
+    process.env.RESEND_API_KEY = "re_test_key";
+    delete process.env.GATEKIT_NOTIFICATION_FROM;
+    const { sendInviteEmail } = await import("./notifications");
+    await expect(
+      sendInviteEmail("Acme", { email: "a@b.example", token: "t", invitedByEmail: "c@d.example" }),
+    ).resolves.toBeUndefined();
+    delete process.env.RESEND_API_KEY;
+  });
+
   it("is a no-op and never throws when RESEND_API_KEY is not configured", async () => {
     const { sendApprovalRequestEmail } = await import("./notifications");
 
