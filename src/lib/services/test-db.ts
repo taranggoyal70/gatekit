@@ -44,6 +44,6 @@ export async function ready(database: Database): Promise<void> {
 export async function truncateAll(database: Database) {
   await ready(database);
   await database.execute(
-    sql`TRUNCATE TABLE audit_events, approvals, actions, policies, agents, invites, subscriptions, notification_settings, org_members, organizations RESTART IDENTITY CASCADE`,
+    sql`TRUNCATE TABLE rate_limits, audit_events, approvals, actions, policies, agents, invites, subscriptions, notification_settings, org_members, organizations RESTART IDENTITY CASCADE`,
   );
 }

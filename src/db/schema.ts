@@ -215,6 +215,17 @@ export const auditEvents = pgTable(
   ],
 );
 
+/**
+ * Fixed-window request counters shared by every server instance. One row per
+ * key (for example `evaluate:<agentId>`), reused across windows, so the table
+ * stays as small as the number of agents.
+ */
+export const rateLimits = pgTable("rate_limits", {
+  key: text("key").primaryKey(),
+  windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
+  count: integer("count").notNull(),
+});
+
 export const invites = pgTable(
   "invites",
   {

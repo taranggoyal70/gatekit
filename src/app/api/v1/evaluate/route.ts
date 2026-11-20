@@ -11,8 +11,9 @@ const MAX_BODY_BYTES = 20_000;
 export async function POST(request: Request) {
   try {
     const agent = await authenticateAgent(request);
+    const database = db();
 
-    const rate = checkRateLimit(`evaluate:${agent.id}`, RATE_LIMIT, RATE_WINDOW_MS);
+    const rate = await checkRateLimit(database, `evaluate:${agent.id}`, RATE_LIMIT, RATE_WINDOW_MS);
     const rateHeaders = {
       "X-RateLimit-Limit": String(RATE_LIMIT),
       "X-RateLimit-Remaining": String(rate.remaining),
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
     const input = evaluateInputSchema.parse(raw);
 
     const { action, approval, reason } = await evaluateAndRecordAction(
-      db(),
+      database,
       agent.orgId,
       agent.id,
       input,
