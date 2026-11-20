@@ -57,7 +57,7 @@ export function NotificationsPanel() {
       const res = await fetch("/api/settings/notifications/test", { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error?.message ?? "Failed to send test message.");
-      setTestResult("Test message sent — check your Slack channel.");
+      setTestResult("Test message sent. Check your Slack channel.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send test message.");
     } finally {

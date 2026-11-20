@@ -48,19 +48,19 @@ export function AuthExperience({ mode }: { mode: "sign-in" | "sign-up" }) {
           </p>
         </div>
 
-        <div className="gate-auth-trace" aria-label="Example live policy trace">
+        <div className="gate-auth-trace" aria-label="Example policy trace">
           <div className="gate-auth-trace-head">
-            <span><i /> Live trace</span>
-            <code>trace_18A7</code>
+            <span><i /> Example policy trace</span>
+            <code>not live data</code>
           </div>
           <div className="gate-auth-trace-row">
             <span>01</span><strong>payment.refund</strong><code>$2,400</code>
           </div>
           <div className="gate-auth-trace-row">
-            <span>02</span><strong>finance_approval</strong><code>matched</code>
+            <span>02</span><strong>High-risk refunds need finance approval</strong><code>matched</code>
           </div>
           <div className="gate-auth-trace-decision">
-            <small>Decision</small><strong>Approval required</strong><span>20ms</span>
+            <small>Decision</small><strong>Approval required</strong><span>audited</span>
           </div>
         </div>
 

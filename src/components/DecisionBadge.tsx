@@ -21,7 +21,17 @@ export function DecisionBadge({
 }) {
   const label =
     status !== "resolved" ? (STATUS_LABELS[status] ?? status) : decision.replace("_", " ");
-  const colorKey = status === "pending" ? "require_approval" : decision;
+  // A held action takes the color of how it ended, not of the hold itself.
+  const colorKey =
+    status === "pending"
+      ? "require_approval"
+      : status === "approved"
+        ? "allow"
+        : status === "denied"
+          ? "deny"
+          : status === "expired"
+            ? "expired"
+            : decision;
 
   return (
     <span

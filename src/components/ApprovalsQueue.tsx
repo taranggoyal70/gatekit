@@ -13,6 +13,13 @@ type PendingRow = {
   };
 };
 
+const RISK_TONE: Record<string, string> = {
+  low: "text-[var(--foreground)]/50",
+  medium: "text-[var(--warn)]",
+  high: "text-[var(--danger)]",
+  critical: "text-[var(--danger)]",
+};
+
 export function ApprovalsQueue() {
   const [rows, setRows] = useState<PendingRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -86,7 +93,7 @@ export function ApprovalsQueue() {
               <div className="min-w-0">
                 <p className="font-medium">{action.actionType}</p>
                 <p className="mt-0.5 truncate text-sm text-[var(--foreground)]/60">{action.target}</p>
-                <p className="mt-1 text-xs uppercase tracking-wide text-[var(--warn)]">
+                <p className={`mt-1 text-xs uppercase tracking-wide ${RISK_TONE[action.riskLevel] ?? RISK_TONE.low}`}>
                   {action.riskLevel} risk
                 </p>
               </div>

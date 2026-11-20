@@ -53,7 +53,7 @@ export async function updateMemberRole(
     const owners = await countOwners(database, orgId);
     if (owners <= 1) {
       throw new AppError(
-        "An organization must have at least one owner — promote someone else first.",
+        "An organization must have at least one owner. Promote someone else first.",
         409,
         "last_owner",
       );

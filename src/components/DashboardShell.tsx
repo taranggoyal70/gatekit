@@ -24,11 +24,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <div><strong>Gatekit</strong><small>Control plane</small></div>
         </Link>
 
-        <div className="gate-app-runtime">
-          <span><i /> Runtime healthy</span>
-          <code>us-west-2</code>
-        </div>
-
         <nav aria-label="Gatekit workspace">
           {NAV_ITEMS.map((item, index) => {
             const active = pathname === item.href || pathname?.startsWith(`${item.href}/`);
@@ -36,7 +31,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <Link key={item.href} href={item.href} className={active ? "is-active" : ""}>
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 {item.label}
-                {item.label === "Approvals" && <i aria-label="Pending activity" />}
               </Link>
             );
           })}
@@ -44,7 +38,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
         <div className="gate-app-sidebar-foot">
           <Link href="/docs">SDK documentation ↗</Link>
-          <div><UserButton /><span>Workspace owner</span></div>
+          <div><UserButton /><span>Your account</span></div>
         </div>
       </aside>
 
@@ -52,14 +46,23 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <header className="gate-app-topbar">
           <div>
             <span className="gate-app-mobile-mark">G/</span>
-            <p>Production workspace</p>
+            <p>Workspace</p>
           </div>
           <div className="gate-app-topbar-meta">
-            <span>Policy latency <strong>20ms</strong></span>
-            <span>Coverage <strong>100%</strong></span>
+            <Link href="/logs">Audit log</Link>
             <UserButton />
           </div>
         </header>
+        <nav className="gate-app-mobile-nav" aria-label="Gatekit workspace">
+          {NAV_ITEMS.map((item) => {
+            const active = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+            return (
+              <Link key={item.href} href={item.href} className={active ? "is-active" : ""} aria-current={active ? "page" : undefined}>
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
         <main className="gate-app-main">{children}</main>
       </div>
     </div>
