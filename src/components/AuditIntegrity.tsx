@@ -16,6 +16,7 @@ type Verification = {
     failures: { actionId: string; kind: string; detail: string }[];
   };
   verifiedAt: string;
+  signedCheckpoint: { keyId: string; seq: number; hash: string; signature: string } | null;
 };
 
 /**
@@ -50,7 +51,12 @@ export function AuditIntegrity() {
 
   async function copyCheckpoint() {
     if (!result) return;
-    const checkpoint = JSON.stringify({ seq: result.chain.headSeq, hash: result.chain.headHash });
+    // Prefer the signed form: anyone holding the public key can check it.
+    const checkpoint = JSON.stringify(
+      result.signedCheckpoint ?? { seq: result.chain.headSeq, hash: result.chain.headHash },
+      null,
+      2,
+    );
     try {
       await navigator.clipboard.writeText(checkpoint);
       setCopied(true);
@@ -88,6 +94,7 @@ export function AuditIntegrity() {
           {result && (
             <p className="mt-0.5 truncate font-mono text-xs text-[var(--foreground)]/50" title={result.chain.headHash}>
               head #{result.chain.headSeq} · {result.chain.headHash.slice(0, 16)}…
+              {result.signedCheckpoint ? ` · signed, key ${result.signedCheckpoint.keyId}` : " · unsigned"}
             </p>
           )}
         </div>
@@ -97,7 +104,7 @@ export function AuditIntegrity() {
             disabled={!result}
             className="rounded-lg border border-[var(--line)] px-3 py-1.5 text-xs font-medium transition hover:border-[var(--foreground)]/30 disabled:opacity-40"
           >
-            {copied ? "Copied" : "Copy checkpoint"}
+            {copied ? "Copied" : result?.signedCheckpoint ? "Copy signed checkpoint" : "Copy checkpoint"}
           </button>
           <button
             onClick={() => void verify()}

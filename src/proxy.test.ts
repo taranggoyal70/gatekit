@@ -32,6 +32,11 @@ describe("isProtectedApiPathname", () => {
     expect(isProtectedApiPathname("/api/billing/webhook")).toBe(false);
   });
 
+  it("publishes only the checkpoint public key from /api/audit", () => {
+    expect(isProtectedApiPathname("/api/audit/public-key")).toBe(false);
+    expect(isProtectedApiPathname("/api/audit/public-key/x")).toBe(true);
+  });
+
   it("does not protect the SDK-facing v1 API (uses agent-key auth instead)", () => {
     expect(isProtectedApiPathname("/api/v1/evaluate")).toBe(false);
     expect(isProtectedApiPathname("/api/v1/actions/abc")).toBe(false);

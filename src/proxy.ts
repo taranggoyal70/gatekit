@@ -24,7 +24,9 @@ const PROTECTED_API_PREFIXES = [
 // Stripe calls this directly with its own signature, not a Clerk session —
 // it must stay reachable while every other /api/billing/* route requires
 // sign-in.
-const UNPROTECTED_EXACT_PATHS = new Set(["/api/billing/webhook"]);
+// The checkpoint public key is published so anyone can verify a signed
+// checkpoint without an account.
+const UNPROTECTED_EXACT_PATHS = new Set(["/api/billing/webhook", "/api/audit/public-key"]);
 
 export function isProtectedPagePathname(pathname: string): boolean {
   return PROTECTED_PAGE_PREFIXES.some(

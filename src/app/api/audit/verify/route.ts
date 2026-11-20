@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { db } from "@/db/client";
 import { requireOrgContext } from "@/lib/auth";
+import { CHECKPOINT_VERSION, configuredSigningKey, signCheckpoint } from "@/lib/checkpoint-signing";
 import { AppError, toErrorResponse } from "@/lib/errors";
 import { verifyOrgAudit } from "@/lib/services/audit";
 
@@ -17,7 +18,9 @@ const querySchema = z.object({
  * Recompute the org's audit chain and cross-check it against the actions
  * table. Pass a checkpoint you stored earlier (`checkpointSeq` +
  * `checkpointHash`, from a previous response's `chain.headSeq`/`headHash`)
- * to also detect truncation or a full rewrite since then.
+ * to also detect truncation or a full rewrite since then. When a signing key
+ * is configured and everything verified, `signedCheckpoint` carries the head
+ * signed with it (see src/lib/checkpoint-signing.ts).
  */
 export async function GET(request: Request) {
   try {
@@ -35,7 +38,25 @@ export async function GET(request: Request) {
         ? { seq: query.checkpointSeq, hash: query.checkpointHash }
         : undefined;
     const result = await verifyOrgAudit(db(), org.id, checkpoint);
-    return Response.json(result, { headers: { "Cache-Control": "no-store" } });
+
+    // Sign the head only when everything verified: a signature vouches for
+    // the chain, so it must never be issued over a broken one.
+    const signingKey = configuredSigningKey();
+    const signedCheckpoint =
+      signingKey && result.ok && result.chain.checked > 0
+        ? signCheckpoint(
+            {
+              version: CHECKPOINT_VERSION,
+              orgId: org.id,
+              seq: result.chain.headSeq,
+              hash: result.chain.headHash,
+              signedAt: result.verifiedAt,
+            },
+            signingKey,
+          )
+        : null;
+
+    return Response.json({ ...result, signedCheckpoint }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return toErrorResponse(error);
   }
