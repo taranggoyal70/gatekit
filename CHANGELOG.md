@@ -4,6 +4,10 @@
 
 Every change to Gatekit, newest first, grouped by the day it was committed.
 
+## 2026-11-20
+
+- Rename the SDK to @gatekithq/sdk ([`539bc34`](https://github.com/taranggoyal70/gatekit/commit/539bc34531f72bdb2b40072cdf87ed4ee65fea94))
+
 ## 2026-11-19
 
 - Generate CHANGELOG.md from git history ([`9e562cf`](https://github.com/taranggoyal70/gatekit/commit/9e562cfd0c6cba7dca98a4e7fd4e21d12953a92d))
